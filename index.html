@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathe With Me</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header id="top-bar">
+        <button id="settings-toggle-button">⚙️</button>
+        <button id="theme-toggle-button">Theme: Light</button>
+        <button id="sound-toggle-button">Sound: On</button>
+    </header>
+    <main id="main-content">
+        <div id="breathing-circle"></div>
+    </main>
+    <footer id="bottom-bar">
+        <button id="play-button">Play</button>
+        <button id="pause-button">Pause</button>
+        <p id="instruction-text">Tap Play to Begin</p>
+    </footer>
+
+    <div id="settings-panel">
+        <h2>Settings</h2>
+        <fieldset>
+            <legend>Breathing Pace</legend>
+            <input type="radio" id="pace-slow" name="breathing-pace" value="slow"> <label for="pace-slow">Slow (6s In, 8s Out)</label><br>
+            <input type="radio" id="pace-normal" name="breathing-pace" value="normal" checked> <label for="pace-normal">Normal (4s In, 6s Out)</label><br>
+            <input type="radio" id="pace-fast" name="breathing-pace" value="fast"> <label for="pace-fast">Fast (3s In, 4s Out)</label><br>
+        </fieldset>
+        <button id="close-settings-button">Close</button>
+    </div>
+
+    <script src="js/AudioManager.js"></script>
+    <script src="js/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

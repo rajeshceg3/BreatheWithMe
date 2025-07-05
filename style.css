@@ -1,0 +1,238 @@
+:root {
+    --background-gradient-start: rgba(255,182,193,0.3);
+    --background-gradient-mid1: rgba(200,200,240,0.3); /* Light theme intermediate 1 */
+    --background-gradient-mid2: rgba(173,230,200,0.3); /* Light theme intermediate 2 */
+    --background-gradient-end: rgba(173,216,230,0.3);
+    --circle-gradient-start: rgba(255,182,193,0.8);
+    --circle-gradient-end: rgba(173,216,230,0.8);
+    --text-color: #333333;
+    --button-bg-color: #f0f0f0;
+    --button-text-color: #333333;
+    --bar-bg-color: #e0e0e0; /* Specific for top/bottom bars */
+    --panel-bg-color: #f8f8f8; /* Settings panel background for light theme */
+    --panel-text-color: #333333; /* Settings panel text for light theme */
+    --transition-duration: 0.3s;
+
+    /* Animation Keyframe Pace Variables - default to normal pace (4,1,6,1 = 12s) */
+    /* These will be updated by JS when pace changes */
+    --inhale-duration: 4s;
+    --hold1-duration: 1s;
+    --exhale-duration: 6s;
+    --hold2-duration: 1s;
+
+    /* Calculated total duration for the animation. JS will also need to set breathingCircle.style.animationDuration */
+    --total-animation-duration: calc(var(--inhale-duration) + var(--hold1-duration) + var(--exhale-duration) + var(--hold2-duration));
+
+    /* Keyframe percentages based on the duration variables */
+    --inhale-end-percent: calc(var(--inhale-duration) / var(--total-animation-duration) * 100%);
+    --hold1-end-percent: calc((var(--inhale-duration) + var(--hold1-duration)) / var(--total-animation-duration) * 100%);
+    --exhale-end-percent: calc((var(--inhale-duration) + var(--hold1-duration) + var(--exhale-duration)) / var(--total-animation-duration) * 100%);
+}
+
+:root[data-theme='dark'] {
+    --background-gradient-start: rgba(25,25,112,0.8);
+    --background-gradient-mid1: rgba(50,40,120,0.8); /* Dark theme intermediate 1 */
+    --background-gradient-mid2: rgba(30,60,100,0.8); /* Dark theme intermediate 2 */
+    --background-gradient-end: rgba(72,61,139,0.8);
+    --circle-gradient-start: rgba(25,25,112,1);
+    --circle-gradient-end: rgba(72,61,139,1);
+    --text-color: #e0e0e0;
+    --button-bg-color: #444444;
+    --button-text-color: #e0e0e0;
+    --bar-bg-color: #333333; /* Darker for bars in dark theme */
+    --panel-bg-color: #3a3a3a; /* Settings panel background for dark theme */
+    --panel-text-color: #e0e0e0; /* Settings panel text for dark theme */
+}
+
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+    background: linear-gradient(135deg,
+                        var(--background-gradient-start),
+                        var(--background-gradient-mid1),
+                        var(--background-gradient-end),
+                        var(--background-gradient-mid2),
+                        var(--background-gradient-start)
+                      );
+    background-size: 400% 400%;
+    animation: animateBackgroundGradient 20s ease infinite;
+    color: var(--text-color);
+    transition: color var(--transition-duration) ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#top-bar {
+    height: 5vh;
+    background-color: var(--bar-bg-color);
+    transition: background-color var(--transition-duration) ease;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 20px;
+    gap: 10px;
+}
+
+#sound-toggle-button, #theme-toggle-button, #settings-toggle-button {
+    padding: 8px 12px; /* Adjusted for gear icon potentially */
+    font-size: 16px; /* Gear icon might need to be larger */
+    cursor: pointer;
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease, border-color var(--transition-duration) ease;
+}
+
+#main-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15%;
+}
+
+#breathing-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom right, var(--circle-gradient-start), var(--circle-gradient-end));
+    transition: background var(--transition-duration) ease;
+    animation-name: breathe;
+    /* animation-duration is set by JS based on pace (directly or via CSS var) */
+    animation-duration: var(--total-animation-duration);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-iteration-count: infinite;
+    animation-play-state: paused;
+}
+
+#bottom-bar {
+    height: 10vh;
+    background-color: var(--bar-bg-color);
+    transition: background-color var(--transition-duration) ease;
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#play-button, #pause-button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease, border-color var(--transition-duration) ease;
+}
+
+#instruction-text {
+    font-size: 14px;
+    color: var(--text-color);
+    transition: color var(--transition-duration) ease;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px; /* Or adjust gap in #bottom-bar */
+}
+
+.hidden {
+    display: none !important; /* Ensure it overrides other display properties if panel uses this */
+}
+
+/* Settings Panel Styles */
+#settings-panel {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Initially off-screen, ensure width is less than this negative value */
+    width: 280px;
+    height: 100%;
+    background-color: var(--panel-bg-color);
+    color: var(--panel-text-color);
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    z-index: 100;
+    transition: right 0.3s ease-in-out, background-color var(--transition-duration) ease, color var(--transition-duration) ease;
+    overflow-y: auto; /* For scrollability if content exceeds height */
+    border-left: 1px solid var(--text-color); /* Optional: border for panel */
+}
+
+#settings-panel.visible {
+    right: 0;
+}
+
+#settings-panel h2 {
+    color: var(--panel-text-color); /* Ensure heading uses panel text color */
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.5em;
+}
+
+#settings-panel fieldset {
+    border: 1px solid var(--panel-text-color);
+    padding: 10px 15px 15px 15px; /* Top, H, Bottom, H */
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+#settings-panel legend {
+    color: var(--panel-text-color);
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#settings-panel label {
+    color: var(--panel-text-color);
+    line-height: 1.8;
+    display: inline-block; /* For better click area */
+    margin-left: 5px; /* Space after radio button */
+    vertical-align: middle;
+}
+
+#settings-panel input[type="radio"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+#settings-panel #close-settings-button {
+    padding: 10px 20px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease, border-color var(--transition-duration) ease;
+    display: block;
+    width: 100%;
+    margin-top: 20px; /* Space above close button */
+    font-size: 1em;
+}
+
+
+@keyframes animateBackgroundGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes breathe {
+    0% { transform: scale(1); }
+    var(--inhale-end-percent) { transform: scale(3); }
+    var(--hold1-end-percent) { transform: scale(3); }
+    var(--exhale-end-percent) { transform: scale(1); }
+    100% { transform: scale(1); }
+}
