@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathe With Me</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header id="top-bar">
+            <button id="settings-toggle-button" aria-label="Open settings" aria-expanded="false">⚙️</button>
+            <button id="theme-toggle-button" aria-label="Toggle theme">Theme: Light</button>
+            <button id="sound-toggle-button" aria-label="Toggle sound" aria-pressed="true">Sound: On</button>
+        </header>
+        <main id="main-content">
+            <div id="breathing-circle" role="timer" aria-label="Breathing animation guide"></div>
+        </main>
+        <footer id="bottom-bar">
+            <button id="play-button" aria-label="Play breathing animation">Play</button>
+            <button id="pause-button" aria-label="Pause breathing animation">Pause</button>
+            <p id="instruction-text" role="status" aria-live="polite">Tap Play to Begin</p>
+        </footer>
+    </div> <!-- Close app-container -->
+
+    <!-- Settings Panel should be a direct child of body for proper fixed positioning -->
+    <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <h2 id="settings-title">Settings</h2>
+        <fieldset>
+            <legend>Breathing Pace</legend>
+            <input type="radio" id="pace-slow" name="breathing-pace" value="slow"> <label for="pace-slow">Slow (6s In, 8s Out)</label><br>
+            <input type="radio" id="pace-normal" name="breathing-pace" value="normal" checked> <label for="pace-normal">Normal (4s In, 6s Out)</label><br>
+            <input type="radio" id="pace-fast" name="breathing-pace" value="fast"> <label for="pace-fast">Fast (3s In, 4s Out)</label><br>
+        </fieldset>
+        <button id="close-settings-button" aria-label="Close settings panel">Close</button>
+    </div>
+
+    <div id="fade-overlay"></div> <!-- For session end fade out -->
+
+    <script src="js/AudioManager.js"></script>
+    <script src="js/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
