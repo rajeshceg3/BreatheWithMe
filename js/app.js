@@ -211,8 +211,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function startSoundCycle(phase = 'inhale') {
         currentPhaseForResume = phase;
 
-        const isEffectivelyPlaying = (prefersReducedMotion && playButton && !playButton.classList.contains('hidden') === false) ||
-                                   (!prefersReducedMotion && breathingCircle && breathingCircle.style.animationPlayState === 'running');
+        let isEffectivelyPlaying;
+        if (prefersReducedMotion) {
+            // If prefersReducedMotion is true, "playing" means the playButton is hidden (so pauseButton is visible).
+            isEffectivelyPlaying = playButton && playButton.classList.contains('hidden');
+        } else {
+            // Otherwise, "playing" means the animation is running.
+            isEffectivelyPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
+        }
 
         if (!isEffectivelyPlaying) {
             clearTimeout(soundSyncTimeoutId); return;
@@ -221,18 +227,31 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(soundSyncTimeoutId);
         const paceSettings = BREATHING_PACES[currentPace];
 
-        if (!audioManager.getIsEnabled()) {
-            if (phase === 'inhale') { instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000); }
-            else if (phase === 'hold1') { instructionText.textContent = `Hold (${paceSettings.hold1}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000); }
-            else if (phase === 'exhale') { instructionText.textContent = `Breathe Out (${paceSettings.exhale}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000); }
-            else if (phase === 'hold2') { instructionText.textContent = `Hold (${paceSettings.hold2}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000); }
-            return;
+        if (phase === 'inhale') {
+            instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
+            if (audioManager.getIsEnabled()) {
+                audioManager.playInhaleSound(paceSettings.inhale);
+            }
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
+        } else if (phase === 'hold1') {
+            instructionText.textContent = `Hold (${paceSettings.hold1}s)...`;
+            if (audioManager.getIsEnabled()) {
+                audioManager.stopSound();
+            }
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
+        } else if (phase === 'exhale') {
+            instructionText.textContent = `Breathe Out (${paceSettings.exhale}s)...`;
+            if (audioManager.getIsEnabled()) {
+                audioManager.playExhaleSound(paceSettings.exhale);
+            }
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
+        } else if (phase === 'hold2') {
+            instructionText.textContent = `Hold (${paceSettings.hold2}s)...`;
+            if (audioManager.getIsEnabled()) {
+                audioManager.stopSound();
+            }
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
         }
-
-        if (phase === 'inhale') { audioManager.playInhaleSound(paceSettings.inhale); instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000); }
-        else if (phase === 'hold1') { audioManager.stopSound(); instructionText.textContent = `Hold (${paceSettings.hold1}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000); }
-        else if (phase === 'exhale') { audioManager.playExhaleSound(paceSettings.exhale); instructionText.textContent = `Breathe Out (${paceSettings.exhale}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000); }
-        else if (phase === 'hold2') { audioManager.stopSound(); instructionText.textContent = `Hold (${paceSettings.hold2}s)...`; soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000); }
     }
 
     // --- Controls Fade Logic ---
@@ -292,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (fadeOverlay) { // Keep overlay for a bit longer or until next action
                         setTimeout(() => fadeOverlay.classList.remove('visible'), 3000); // Auto-remove after 3s
                     }
+                    sessionIncrementedThisPageLoad = false; // Reset flag for next session
                     showControls(); // Ensure controls are visible at session end
                 }, 1500);
             }, 5 * 60 * 1000);
@@ -312,6 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (audioManager) audioManager.stopSound();
             clearTimeout(sessionEndTimerId); // Stop session end timer
             if (fadeOverlay) fadeOverlay.classList.remove('visible'); // Remove overlay if active
+            sessionIncrementedThisPageLoad = false; // Reset flag for next session
             showControls(); // Ensure controls are visible when paused
         });
     }
@@ -337,8 +358,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tab Visibility Handling ---
     document.addEventListener('visibilitychange', () => {
         if (!breathingCircle) return;
-        const isEffectivelyPlaying = (prefersReducedMotion && playButton && !playButton.classList.contains('hidden')) ||
-                                   (!prefersReducedMotion && breathingCircle.style.animationPlayState === 'running');
+        let isEffectivelyPlaying;
+        if (prefersReducedMotion) {
+            // If prefersReducedMotion is true, "playing" means the playButton is hidden (so pauseButton is visible).
+            isEffectivelyPlaying = playButton && playButton.classList.contains('hidden');
+        } else {
+            // Otherwise, "playing" means the animation is running.
+            isEffectivelyPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
+        }
 
         if (document.hidden) {
             if (isEffectivelyPlaying) {
