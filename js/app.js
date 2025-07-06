@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsToggleButton = document.getElementById('settings-toggle-button');
     const closeSettingsButton = document.getElementById('close-settings-button');
     const paceRadios = document.querySelectorAll('input[name="breathing-pace"]');
+    const sessionDurationSelect = document.getElementById('session-duration'); // New session duration select
     const fadeOverlay = document.getElementById('fade-overlay'); // New overlay element
     const topBar = document.getElementById('top-bar');
     const bottomBar = document.getElementById('bottom-bar');
@@ -33,6 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionEndTimerId = null;
     let controlsFadeTimeoutId = null;
 
+    const SESSION_DURATIONS = { // Values in milliseconds
+        '3': 3 * 60 * 1000,
+        '5': 5 * 60 * 1000,
+        '10': 10 * 60 * 1000,
+        '15': 15 * 60 * 1000
+    };
+    let currentSessionDuration = SESSION_DURATIONS['5']; // Default to 5 minutes
+
 
     const BREATHING_PACES = {
         slow: { inhale: 6, hold1: 1, exhale: 8, hold2: 1, label: 'Slow' },
@@ -51,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sessionCount = parseInt(localStorage.getItem('sessionCount')) || 0; // Load session count
 
     loadPacePreference();
+    loadDurationPreference(); // Load duration preference
     updateSoundButtonText();
     updateThemeButtonText();
 
@@ -207,6 +217,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Session Duration Logic ---
+    function loadDurationPreference() {
+        const savedDurationKey = localStorage.getItem('sessionDuration');
+        if (savedDurationKey && SESSION_DURATIONS[savedDurationKey]) {
+            currentSessionDuration = SESSION_DURATIONS[savedDurationKey];
+            if (sessionDurationSelect) {
+                sessionDurationSelect.value = savedDurationKey;
+            }
+        } else {
+            // Default is already set, ensure select matches if it exists
+            if (sessionDurationSelect) {
+                sessionDurationSelect.value = Object.keys(SESSION_DURATIONS).find(key => SESSION_DURATIONS[key] === currentSessionDuration) || '5';
+            }
+        }
+    }
+
+    if (sessionDurationSelect) {
+        sessionDurationSelect.addEventListener('change', (event) => {
+            const selectedDurationKey = event.target.value;
+            if (SESSION_DURATIONS[selectedDurationKey]) {
+                currentSessionDuration = SESSION_DURATIONS[selectedDurationKey];
+                localStorage.setItem('sessionDuration', selectedDurationKey);
+                // Optional: Update instruction text or provide feedback
+                // console.log(`Session duration set to ${selectedDurationKey} minutes.`);
+            }
+        });
+    }
+
     // --- Sound Cycle and Animation Control ---
     function startSoundCycle(phase = 'inhale') {
         currentPhaseForResume = phase;
@@ -314,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sessionIncrementedThisPageLoad = false; // Reset flag for next session
                     showControls(); // Ensure controls are visible at session end
                 }, 1500);
-            }, 5 * 60 * 1000);
+            }, currentSessionDuration); // Use variable session duration
 
             hideControlsAfterDelay(); // Start controls fade-out timer
         });
