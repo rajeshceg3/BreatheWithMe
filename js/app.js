@@ -64,12 +64,30 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSoundButtonText();
     updateThemeButtonText();
 
-    if (instructionText && BREATHING_PACES[currentPace]) {
-        const initialPaceSettings = BREATHING_PACES[currentPace];
-        instructionText.textContent = `Tap Play to Begin. (Pace: ${initialPaceSettings.inhale}s In, ${initialPaceSettings.exhale}s Out)`;
+    // --- UI Update Functions ---
+    function updateInstructionText(newText, isSessionCompletion = false) {
+        if (!instructionText) return;
+
+        instructionText.classList.add('text-fade-out');
+
+        setTimeout(() => {
+            instructionText.textContent = newText;
+            instructionText.classList.remove('text-fade-out'); // Fade in
+            if (isSessionCompletion) {
+                instructionText.classList.add('session-complete-effect');
+                instructionText.addEventListener('animationend', () => {
+                    instructionText.classList.remove('session-complete-effect');
+                }, { once: true });
+            }
+        }, 300); // Match CSS transition duration
     }
 
-    // --- UI Update Functions ---
+    if (instructionText && BREATHING_PACES[currentPace]) {
+        const initialPaceSettings = BREATHING_PACES[currentPace];
+        // instructionText.textContent is now set by updateInstructionText
+        updateInstructionText(`Tap Play to Begin. (Pace: ${initialPaceSettings.inhale}s In, ${initialPaceSettings.exhale}s Out)`);
+    }
+
     function updateSoundButtonText() {
         if (soundToggleButton) {
             const isEnabled = audioManager.getIsEnabled();
@@ -183,16 +201,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 requestAnimationFrame(() => {
                     breathingCircle.style.animationName = 'breathe';
                     breathingCircle.style.animationPlayState = 'running';
-                    startSoundCycle('inhale');
+                    startSoundCycle('inhale'); // This will call updateInstructionText
                 });
             });
         } else if (isPlaying && prefersReducedMotion) {
-             startSoundCycle('inhale');
+             startSoundCycle('inhale'); // This will call updateInstructionText
         } else {
-            if (instructionText && (!playButton || !playButton.classList.contains('hidden'))) {
-                 instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
-            } else if (instructionText && playButton && playButton.classList.contains('hidden') && breathingCircle && breathingCircle.style.animationPlayState !== 'running') {
-                 instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
+            // If not playing, update instruction text directly if needed (e.g. when pace changes while paused)
+            if ((!playButton || !playButton.classList.contains('hidden'))) {
+                 updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
+            } else if (playButton && playButton.classList.contains('hidden') && breathingCircle && breathingCircle.style.animationPlayState !== 'running') {
+                 // This case might be redundant if startSoundCycle is always called when playing.
+                 updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             }
         }
     }
@@ -266,25 +286,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const paceSettings = BREATHING_PACES[currentPace];
 
         if (phase === 'inhale') {
-            instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
+            updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             if (audioManager.getIsEnabled()) {
                 audioManager.playInhaleSound(paceSettings.inhale);
             }
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
-            instructionText.textContent = `Hold (${paceSettings.hold1}s)...`;
+            updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
             if (audioManager.getIsEnabled()) {
                 audioManager.stopSound();
             }
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
         } else if (phase === 'exhale') {
-            instructionText.textContent = `Breathe Out (${paceSettings.exhale}s)...`;
+            updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             if (audioManager.getIsEnabled()) {
                 audioManager.playExhaleSound(paceSettings.exhale);
             }
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
-            instructionText.textContent = `Hold (${paceSettings.hold2}s)...`;
+            updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
             if (audioManager.getIsEnabled()) {
                 audioManager.stopSound();
             }
@@ -328,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (prefersReducedMotion) {
-                if (instructionText) instructionText.textContent = "Breathing guidance started (animations reduced).";
+                updateInstructionText("Breathing guidance started (animations reduced).");
             }
             if (breathingCircle && !prefersReducedMotion) {
                  breathingCircle.style.animationPlayState = 'running';
@@ -343,9 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (fadeOverlay) fadeOverlay.classList.add('visible');
                 setTimeout(() => {
                     if (breathingCircle && (breathingCircle.style.animationPlayState === 'running' || (prefersReducedMotion && playButton && playButton.classList.contains('hidden')))) {
-                        if(pauseButton) pauseButton.click();
+                        if(pauseButton) pauseButton.click(); // This will trigger its own instruction text update
                     }
-                    if (instructionText) instructionText.textContent = "Session complete. Well done!";
+                    // Update instruction text for session completion with effect
+                    updateInstructionText("Session complete. Well done!", true);
                     if (fadeOverlay) { // Keep overlay for a bit longer or until next action
                         setTimeout(() => fadeOverlay.classList.remove('visible'), 3000); // Auto-remove after 3s
                     }
@@ -365,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             updatePlayPauseButtonsState(false);
             const currentPaceSettings = BREATHING_PACES[currentPace];
-            if (instructionText) instructionText.textContent = `Paused. Resume with Breathe In (${currentPaceSettings.inhale}s)...`;
+            updateInstructionText(`Paused. Resume with Breathe In (${currentPaceSettings.inhale}s)...`);
             clearTimeout(soundSyncTimeoutId);
             if (audioManager) audioManager.stopSound();
             clearTimeout(sessionEndTimerId); // Stop session end timer
@@ -411,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!prefersReducedMotion) breathingCircle.style.animationPlayState = 'paused';
                 clearTimeout(soundSyncTimeoutId); audioManager.stopSound();
                 updatePlayPauseButtonsState(false);
-                if (instructionText) instructionText.textContent = 'Paused (Tab Hidden)';
+                updateInstructionText('Paused (Tab Hidden)');
                 clearTimeout(sessionEndTimerId); // Pause session timer
                 showControls(); // Show controls when tab is hidden and was playing
             } else {
