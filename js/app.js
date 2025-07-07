@@ -1,26 +1,14 @@
-// Main application JavaScript file
-console.log("App started");
-
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const breathingCircle = document.getElementById('breathing-circle');
-    const playButton = document.getElementById('play-button');
-    const pauseButton = document.getElementById('pause-button');
-    const instructionText = document.getElementById('instruction-text');
-    const soundToggleButton = document.getElementById('sound-toggle-button');
-    const themeToggleButton = document.getElementById('theme-toggle-button');
-    const settingsPanel = document.getElementById('settings-panel');
-    const settingsToggleButton = document.getElementById('settings-toggle-button');
-    const closeSettingsButton = document.getElementById('close-settings-button');
     const paceRadios = document.querySelectorAll('input[name="breathing-pace"]');
-    const fadeOverlay = document.getElementById('fade-overlay'); // New overlay element
-    const topBar = document.getElementById('top-bar');
-    const bottomBar = document.getElementById('bottom-bar');
-
 
     // Managers
     const audioManager = new AudioManager();
     const themeManager = new ThemeManager();
+    const particleManager = new ParticleManager('particle-canvas');
+    const uiMediator = new UIMediator();
+    const animationManager = new AnimationManager(breathingCircle);
 
     // App State
     let soundSyncTimeoutId = null;
@@ -33,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionEndTimerId = null;
     let controlsFadeTimeoutId = null;
 
-
     const BREATHING_PACES = {
         slow: { inhale: 6, hold1: 1, exhale: 8, hold2: 1, label: 'Slow' },
         normal: { inhale: 4, hold1: 1, exhale: 6, hold2: 1, label: 'Normal' },
@@ -41,50 +28,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     let currentPace = 'normal';
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     // --- Initialization ---
-    themeManager.initialize('light');
-    let initialSoundEnabled = localStorage.getItem('soundEnabled') !== 'false';
-    audioManager.setEnabled(initialSoundEnabled);
-
-    sessionCount = parseInt(localStorage.getItem('sessionCount')) || 0; // Load session count
-
-    loadPacePreference();
-    updateSoundButtonText();
-    updateThemeButtonText();
-
-    if (instructionText && BREATHING_PACES[currentPace]) {
-        const initialPaceSettings = BREATHING_PACES[currentPace];
-        instructionText.textContent = `Tap Play to Begin. (Pace: ${initialPaceSettings.inhale}s In, ${initialPaceSettings.exhale}s Out)`;
+    function initialize() {
+        themeManager.initialize('light');
+        particleManager.init();
+        const initialSoundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        audioManager.setEnabled(initialSoundEnabled);
+        uiMediator.updateSoundButton(initialSoundEnabled);
+        uiMediator.updateThemeButton(themeManager.getTheme());
+        loadPacePreference();
+        welcomeMessage();
     }
 
-    // --- UI Update Functions ---
-    function updateSoundButtonText() {
-        if (soundToggleButton) {
-            const isEnabled = audioManager.getIsEnabled();
-            soundToggleButton.textContent = isEnabled ? 'Sound: On' : 'Sound: Off';
-            soundToggleButton.setAttribute('aria-pressed', isEnabled.toString());
-        }
-    }
-
-    function updateThemeButtonText() {
-        if (themeToggleButton) {
-            const themeName = themeManager.getTheme();
-            themeToggleButton.textContent = `Theme: ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}`;
-        }
-    }
-
-    function updatePlayPauseButtonsState(isPlaying) {
-        if (playButton && pauseButton) {
-            if (isPlaying) {
-                playButton.classList.add('hidden');
-                pauseButton.classList.remove('hidden');
-            } else {
-                playButton.classList.remove('hidden');
-                pauseButton.classList.add('hidden');
-            }
-        }
+    function welcomeMessage() {
+        uiMediator.updateInstructionText('Welcome.');
+        setTimeout(() => {
+            uiMediator.instructionText.style.opacity = '0';
+            setTimeout(() => {
+                const paceSettings = BREATHING_PACES[currentPace];
+                uiMediator.updateInstructionText(`Tap Begin to start. (Pace: ${paceSettings.inhale}s In, ${paceSettings.exhale}s Out)`);
+                uiMediator.instructionText.style.opacity = '1';
+            }, 1000);
+        }, 2000);
     }
 
     function ensureAudioInitialized() {
@@ -98,15 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Focus Trap Function for Settings Panel ---
     function trapFocus(event) {
-        if (!settingsPanel || !settingsPanel.classList.contains('visible')) return;
+        if (!uiMediator.settingsPanel || !uiMediator.settingsPanel.classList.contains('visible')) return;
 
         if (event.key === 'Escape') {
-            if (closeSettingsButton) closeSettingsButton.click();
+            if (uiMediator.closeSettingsButton) uiMediator.closeSettingsButton.click();
             return;
         }
         if (event.key !== 'Tab') return;
 
-        const focusableElements = Array.from(settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+        const focusableElements = Array.from(uiMediator.settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
         if (!focusableElements.length) return;
         const firstFocusableElement = focusableElements[0];
         const lastFocusableElement = focusableElements[focusableElements.length - 1];
@@ -122,20 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Settings Panel Logic ---
-    if (settingsToggleButton && settingsPanel && closeSettingsButton) {
-        settingsToggleButton.addEventListener('click', () => {
+    if (uiMediator.settingsToggleButton && uiMediator.settingsPanel && uiMediator.closeSettingsButton) {
+        uiMediator.settingsToggleButton.addEventListener('click', () => {
             previouslyFocusedElement = document.activeElement;
-            settingsPanel.classList.add('visible');
-            settingsToggleButton.setAttribute('aria-expanded', 'true');
-            // Show controls when settings panel is open
-            if(topBar) topBar.classList.remove('controls-hidden');
-            if(bottomBar) bottomBar.classList.remove('controls-hidden');
+            uiMediator.toggleSettingsPanel(true);
             clearTimeout(controlsFadeTimeoutId);
 
-            const focusableElements = Array.from(settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+            const focusableElements = Array.from(uiMediator.settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
             if (focusableElements.length) {
                 let focused = false;
-                const checkedRadio = settingsPanel.querySelector('input[name="breathing-pace"]:checked');
+                const checkedRadio = uiMediator.settingsPanel.querySelector('input[name="breathing-pace"]:checked');
                 if (checkedRadio) { checkedRadio.focus(); focused = true; }
                 else if (focusableElements.length > 1) { focusableElements[0].focus(); focused = true; }
                 if(!focused && focusableElements.length > 0){ focusableElements[0].focus(); }
@@ -143,12 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('keydown', trapFocus);
         });
 
-        closeSettingsButton.addEventListener('click', () => {
-            settingsPanel.classList.remove('visible');
-            settingsToggleButton.setAttribute('aria-expanded', 'false');
+        uiMediator.closeSettingsButton.addEventListener('click', () => {
+            uiMediator.toggleSettingsPanel(false);
             document.removeEventListener('keydown', trapFocus);
             if (previouslyFocusedElement) previouslyFocusedElement.focus();
-            // Re-hide controls if animation is running
             if (breathingCircle && breathingCircle.style.animationPlayState === 'running') {
                 hideControlsAfterDelay();
             }
@@ -160,30 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!BREATHING_PACES[paceName]) return;
         const paceSettings = BREATHING_PACES[paceName];
         currentPace = paceName;
-
-        document.documentElement.style.setProperty('--inhale-duration', paceSettings.inhale + 's');
-        document.documentElement.style.setProperty('--hold1-duration', paceSettings.hold1 + 's');
-        document.documentElement.style.setProperty('--exhale-duration', paceSettings.exhale + 's');
-        document.documentElement.style.setProperty('--hold2-duration', paceSettings.hold2 + 's');
+        animationManager.setAnimationPace(paceSettings);
 
         const isPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
-        if (isPlaying && !prefersReducedMotion) {
-            breathingCircle.style.animationName = 'none';
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    breathingCircle.style.animationName = 'breathe';
-                    breathingCircle.style.animationPlayState = 'running';
-                    startSoundCycle('inhale');
-                });
-            });
-        } else if (isPlaying && prefersReducedMotion) {
-             startSoundCycle('inhale');
+        if (isPlaying) {
+            animationManager.reset();
+            startSoundCycle('inhale');
         } else {
-            if (instructionText && (!playButton || !playButton.classList.contains('hidden'))) {
-                 instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
-            } else if (instructionText && playButton && playButton.classList.contains('hidden') && breathingCircle && breathingCircle.style.animationPlayState !== 'running') {
-                 instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
-            }
+            uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
         }
     }
 
@@ -211,14 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function startSoundCycle(phase = 'inhale') {
         currentPhaseForResume = phase;
 
-        let isEffectivelyPlaying;
-        if (prefersReducedMotion) {
-            // If prefersReducedMotion is true, "playing" means the playButton is hidden (so pauseButton is visible).
-            isEffectivelyPlaying = playButton && playButton.classList.contains('hidden');
-        } else {
-            // Otherwise, "playing" means the animation is running.
-            isEffectivelyPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
-        }
+        const isEffectivelyPlaying = (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
+                                   (!animationManager.prefersReducedMotion && breathingCircle && breathingCircle.style.animationPlayState === 'running');
 
         if (!isEffectivelyPlaying) {
             clearTimeout(soundSyncTimeoutId); return;
@@ -228,28 +165,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const paceSettings = BREATHING_PACES[currentPace];
 
         if (phase === 'inhale') {
-            instructionText.textContent = `Breathe In (${paceSettings.inhale}s)...`;
-            if (audioManager.getIsEnabled()) {
-                audioManager.playInhaleSound(paceSettings.inhale);
-            }
+            uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
+            particleManager.setState('gathering');
+            if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
-            instructionText.textContent = `Hold (${paceSettings.hold1}s)...`;
-            if (audioManager.getIsEnabled()) {
-                audioManager.stopSound();
-            }
+            uiMediator.updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
+            particleManager.setState('idle');
+            if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
         } else if (phase === 'exhale') {
-            instructionText.textContent = `Breathe Out (${paceSettings.exhale}s)...`;
-            if (audioManager.getIsEnabled()) {
-                audioManager.playExhaleSound(paceSettings.exhale);
-            }
+            uiMediator.updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
+            particleManager.setState('dispersing');
+            if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
-            instructionText.textContent = `Hold (${paceSettings.hold2}s)...`;
-            if (audioManager.getIsEnabled()) {
-                audioManager.stopSound();
-            }
+            uiMediator.updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
+            particleManager.setState('idle');
+            if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
         }
     }
@@ -258,148 +191,128 @@ document.addEventListener('DOMContentLoaded', () => {
     function hideControlsAfterDelay() {
         clearTimeout(controlsFadeTimeoutId);
         controlsFadeTimeoutId = setTimeout(() => {
-            if(topBar) topBar.classList.add('controls-hidden');
-            if(bottomBar) bottomBar.classList.add('controls-hidden');
-        }, 3000); // 3 seconds delay
+            uiMediator.toggleControls(false);
+        }, 3000);
     }
 
     function showControls() {
-        if(topBar) topBar.classList.remove('controls-hidden');
-        if(bottomBar) bottomBar.classList.remove('controls-hidden');
+        uiMediator.toggleControls(true);
         clearTimeout(controlsFadeTimeoutId);
     }
 
     document.body.addEventListener('mousemove', () => {
-        if (breathingCircle && breathingCircle.style.animationPlayState === 'running' ||
-           (prefersReducedMotion && playButton && playButton.classList.contains('hidden'))) { // Active session
+        if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+           (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
             showControls();
             hideControlsAfterDelay();
         }
     });
 
-
     // --- Event Listeners for Controls ---
-    if (playButton) {
-        playButton.addEventListener('click', () => {
-            ensureAudioInitialized();
-            localStorage.setItem('lastUsed', new Date().toISOString());
-            if (!sessionIncrementedThisPageLoad) {
-                sessionCount++;
-                localStorage.setItem('sessionCount', sessionCount.toString());
-                sessionIncrementedThisPageLoad = true;
-            }
+    if (uiMediator.sessionButton) {
+        uiMediator.sessionButton.addEventListener('click', () => {
+            const isPlaying = (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+                              (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End');
+            if (isPlaying) {
+                // End the session
+                animationManager.pause();
+                uiMediator.updateSessionButton(false);
+                const currentPaceSettings = BREATHING_PACES[currentPace];
+                uiMediator.updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
+                clearTimeout(soundSyncTimeoutId);
+                if (audioManager) audioManager.stopSound();
+                clearTimeout(sessionEndTimerId);
+                uiMediator.toggleFadeOverlay(false);
+                sessionIncrementedThisPageLoad = false;
+                showControls();
+            } else {
+                // Begin the session
+                ensureAudioInitialized();
+                localStorage.setItem('lastUsed', new Date().toISOString());
+                if (!sessionIncrementedThisPageLoad) {
+                    sessionCount++;
+                    localStorage.setItem('sessionCount', sessionCount.toString());
+                    sessionIncrementedThisPageLoad = true;
+                }
 
-            if (prefersReducedMotion) {
-                if (instructionText) instructionText.textContent = "Breathing guidance started (animations reduced).";
-            }
-            if (breathingCircle && !prefersReducedMotion) {
-                 breathingCircle.style.animationPlayState = 'running';
-            }
-            updatePlayPauseButtonsState(true);
-            startSoundCycle('inhale');
+                if (animationManager.prefersReducedMotion) {
+                    uiMediator.updateInstructionText("Breathing guidance started (animations reduced).");
+                }
+                animationManager.play();
+                uiMediator.updateSessionButton(true);
+                startSoundCycle('inhale');
 
-            // Session end timer
-            clearTimeout(sessionEndTimerId);
-            if (fadeOverlay) fadeOverlay.classList.remove('visible'); // Ensure overlay is hidden at start
-            sessionEndTimerId = setTimeout(() => {
-                if (fadeOverlay) fadeOverlay.classList.add('visible');
-                setTimeout(() => {
-                    if (breathingCircle && (breathingCircle.style.animationPlayState === 'running' || (prefersReducedMotion && playButton && playButton.classList.contains('hidden')))) {
-                        if(pauseButton) pauseButton.click();
-                    }
-                    if (instructionText) instructionText.textContent = "Session complete. Well done!";
-                    if (fadeOverlay) { // Keep overlay for a bit longer or until next action
-                        setTimeout(() => fadeOverlay.classList.remove('visible'), 3000); // Auto-remove after 3s
-                    }
-                    sessionIncrementedThisPageLoad = false; // Reset flag for next session
-                    showControls(); // Ensure controls are visible at session end
-                }, 1500);
-            }, 5 * 60 * 1000);
+                // Session end timer
+                clearTimeout(sessionEndTimerId);
+                uiMediator.toggleFadeOverlay(false);
+                sessionEndTimerId = setTimeout(() => {
+                    uiMediator.toggleFadeOverlay(true);
+                    setTimeout(() => {
+                        if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+                            (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
+                            uiMediator.sessionButton.click();
+                        }
+                        uiMediator.updateInstructionText("Session complete. Well done!");
+                        setTimeout(() => uiMediator.toggleFadeOverlay(false), 3000);
+                        sessionIncrementedThisPageLoad = false;
+                        showControls();
+                    }, 1500);
+                }, 5 * 60 * 1000);
 
-            hideControlsAfterDelay(); // Start controls fade-out timer
+                hideControlsAfterDelay();
+            }
         });
     }
 
-    if (pauseButton) {
-        pauseButton.addEventListener('click', () => {
-            if (breathingCircle && !prefersReducedMotion) {
-                breathingCircle.style.animationPlayState = 'paused';
-            }
-            updatePlayPauseButtonsState(false);
-            const currentPaceSettings = BREATHING_PACES[currentPace];
-            if (instructionText) instructionText.textContent = `Paused. Resume with Breathe In (${currentPaceSettings.inhale}s)...`;
-            clearTimeout(soundSyncTimeoutId);
-            if (audioManager) audioManager.stopSound();
-            clearTimeout(sessionEndTimerId); // Stop session end timer
-            if (fadeOverlay) fadeOverlay.classList.remove('visible'); // Remove overlay if active
-            sessionIncrementedThisPageLoad = false; // Reset flag for next session
-            showControls(); // Ensure controls are visible when paused
-        });
-    }
-
-    if (soundToggleButton) {
-        soundToggleButton.addEventListener('click', () => {
-            let currentSoundState = audioManager.getIsEnabled();
+    if (uiMediator.soundToggleButton) {
+        uiMediator.soundToggleButton.addEventListener('click', () => {
+            const currentSoundState = audioManager.getIsEnabled();
             audioManager.setEnabled(!currentSoundState);
             localStorage.setItem('soundEnabled', audioManager.getIsEnabled().toString());
-            updateSoundButtonText();
+            uiMediator.updateSoundButton(audioManager.getIsEnabled());
             if (audioManager.getIsEnabled() && !audioInitialized) {
-                 audioManager.initialize(); audioInitialized = true;
+                audioManager.initialize();
+                audioInitialized = true;
             }
         });
     }
 
-    if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', () => {
-            themeManager.toggleTheme(); updateThemeButtonText();
+    if (uiMediator.themeToggleButton) {
+        uiMediator.themeToggleButton.addEventListener('click', () => {
+            const newTheme = themeManager.toggleTheme();
+            uiMediator.updateThemeButton(newTheme);
         });
     }
 
     // --- Tab Visibility Handling ---
     document.addEventListener('visibilitychange', () => {
         if (!breathingCircle) return;
-        let isEffectivelyPlaying;
-        if (prefersReducedMotion) {
-            // If prefersReducedMotion is true, "playing" means the playButton is hidden (so pauseButton is visible).
-            isEffectivelyPlaying = playButton && playButton.classList.contains('hidden');
-        } else {
-            // Otherwise, "playing" means the animation is running.
-            isEffectivelyPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
-        }
+        const isEffectivelyPlaying = (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
+                                   (!animationManager.prefersReducedMotion && breathingCircle && breathingCircle.style.animationPlayState === 'running');
 
         if (document.hidden) {
             if (isEffectivelyPlaying) {
                 animationWasActiveBeforeBlur = true;
-                if (!prefersReducedMotion) breathingCircle.style.animationPlayState = 'paused';
-                clearTimeout(soundSyncTimeoutId); audioManager.stopSound();
-                updatePlayPauseButtonsState(false);
-                if (instructionText) instructionText.textContent = 'Paused (Tab Hidden)';
-                clearTimeout(sessionEndTimerId); // Pause session timer
-                showControls(); // Show controls when tab is hidden and was playing
+                animationManager.pause();
+                clearTimeout(soundSyncTimeoutId);
+                audioManager.stopSound();
+                uiMediator.updateSessionButton(false);
+                uiMediator.updateInstructionText('Paused (Tab Hidden)');
+                clearTimeout(sessionEndTimerId);
+                showControls();
             } else {
                 animationWasActiveBeforeBlur = false;
             }
         } else { // Tab is visible
             if (animationWasActiveBeforeBlur) {
-                if (!prefersReducedMotion) breathingCircle.style.animationPlayState = 'running';
-                updatePlayPauseButtonsState(true);
+                animationManager.play();
+                uiMediator.updateSessionButton(true);
                 startSoundCycle(currentPhaseForResume);
                 animationWasActiveBeforeBlur = false;
-                // Resume session end timer - this is complex, for now, it effectively restarts the 5min timer if user manually plays again
-                // Or, if play was auto-resumed, restart the sessionEndTimer from scratch or remaining time
-                // For simplicity, let play button click restart the 5-min timer.
-                // If auto-resuming here, we might not want to restart the main 5-min timer unless play is explicitly clicked.
-                // Let's assume the 5-min timer is only set on explicit play clicks.
-                // If it was running, it was cleared. If it wasn't, this visibility change won't start it.
-                 hideControlsAfterDelay(); // Re-hide controls after delay
+                hideControlsAfterDelay();
             }
         }
     });
 
-    if (breathingCircle) {
-        breathingCircle.addEventListener('animationiteration', () => {
-            // This is mostly for visual sync debugging if needed.
-            // The sound cycle is driven by its own setTimeout chain.
-        });
-    }
+    initialize();
 });

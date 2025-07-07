@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Breathe With Me</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.scss">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
+    <canvas id="particle-canvas"></canvas>
     <div class="app-container">
         <header id="top-bar">
-            <button id="settings-toggle-button" aria-label="Open settings" aria-expanded="false">⚙️</button>
+            <button id="settings-toggle-button" aria-label="Open settings" aria-expanded="false">
+                <img src="logo.svg" alt="Settings" class="logo-svg">
+            </button>
             <button id="theme-toggle-button" aria-label="Toggle theme">Theme: Light</button>
             <button id="sound-toggle-button" aria-label="Toggle sound" aria-pressed="true">Sound: On</button>
         </header>
@@ -17,9 +24,8 @@
             <div id="breathing-circle" role="timer" aria-label="Breathing animation guide"></div>
         </main>
         <footer id="bottom-bar">
-            <button id="play-button" aria-label="Play breathing animation">Play</button>
-            <button id="pause-button" aria-label="Pause breathing animation">Pause</button>
-            <p id="instruction-text" role="status" aria-live="polite">Tap Play to Begin</p>
+            <button id="session-button" aria-label="Begin breathing session">Begin</button>
+            <p id="instruction-text" role="status" aria-live="polite">Welcome. Tap Begin to start.</p>
         </footer>
     </div> <!-- Close app-container -->
 
@@ -39,6 +45,9 @@
 
     <script src="js/AudioManager.js"></script>
     <script src="js/ThemeManager.js"></script>
+    <script src="js/ParticleManager.js"></script>
+    <script src="js/UIMediator.js"></script>
+    <script src="js/AnimationManager.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

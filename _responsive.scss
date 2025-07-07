@@ -1,0 +1,107 @@
+/* Responsive Design */
+
+/* Mobile (320px - 767px) */
+@media screen and (max-width: 767px) {
+    :root {
+        --circle-scale-max: 2.5;
+    }
+
+    #main-content {
+        padding: 10% 5%;
+    }
+
+    #top-bar {
+        height: auto;
+        min-height: 8vh;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        button {
+            padding: 12px 15px;
+            font-size: 1em;
+        }
+    }
+
+    #bottom-bar {
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+
+        #instruction-text {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+    }
+
+    #settings-panel {
+        width: 90vw;
+        right: -100vw;
+        max-width: 300px;
+
+        &.visible {
+            right: 0;
+        }
+
+        h2 {
+            font-size: 1.3em;
+        }
+
+        legend {
+            font-size: 1em;
+        }
+
+        label {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+    #main-content {
+        padding: 12%;
+    }
+
+    #settings-panel {
+        width: 320px;
+        right: -350px;
+
+        &.visible {
+            right: 0;
+        }
+    }
+}
+
+/* Desktop (1025px+) */
+@media screen and (min-width: 1025px) {
+    .app-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px var(--shadow-color);
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #breathing-circle {
+    animation-name: none !important;
+  }
+
+  body {
+    animation-name: none !important;
+  }
+
+  body, .app-container, #breathing-circle, button, #top-bar, #bottom-bar, #settings-panel,
+  #sound-toggle-button, #theme-toggle-button, #settings-toggle-button,
+  #session-button, #close-settings-button, #instruction-text {
+    transition-duration: 0.001s !important;
+    transition-delay: 0s !important;
+  }
+
+  #settings-panel {
+    transition: none !important;
+  }
+}
