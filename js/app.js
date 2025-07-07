@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const breathingCircle = document.getElementById('breathing-circle');
     const paceRadios = document.querySelectorAll('input[name="breathing-pace"]');
+    const sessionDurationSelect = document.getElementById('session-duration');
 
     // Managers
     const audioManager = new AudioManager();
@@ -28,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     let currentPace = 'normal';
 
+    const SESSION_DURATIONS = { // Values in milliseconds
+        '3': 3 * 60 * 1000,
+        '5': 5 * 60 * 1000,
+        '10': 10 * 60 * 1000,
+        '15': 15 * 60 * 1000
+    };
+    let currentSessionDuration = SESSION_DURATIONS['5']; // Default to 5 minutes
+
     // --- Initialization ---
     function initialize() {
         themeManager.initialize('light');
@@ -37,19 +46,37 @@ document.addEventListener('DOMContentLoaded', () => {
         uiMediator.updateSoundButton(initialSoundEnabled);
         uiMediator.updateThemeButton(themeManager.getTheme());
         loadPacePreference();
+        loadDurationPreference();
         welcomeMessage();
     }
 
     function welcomeMessage() {
-        uiMediator.updateInstructionText('Welcome.');
+        updateInstructionText('Welcome.');
         setTimeout(() => {
             uiMediator.instructionText.style.opacity = '0';
             setTimeout(() => {
                 const paceSettings = BREATHING_PACES[currentPace];
-                uiMediator.updateInstructionText(`Tap Begin to start. (Pace: ${paceSettings.inhale}s In, ${paceSettings.exhale}s Out)`);
+                updateInstructionText(`Tap Begin to start. (Pace: ${paceSettings.inhale}s In, ${paceSettings.exhale}s Out)`);
                 uiMediator.instructionText.style.opacity = '1';
             }, 1000);
         }, 2000);
+    }
+
+    function updateInstructionText(newText, isSessionCompletion = false) {
+        if (!uiMediator.instructionText) return;
+
+        uiMediator.instructionText.classList.add('text-fade-out');
+
+        setTimeout(() => {
+            uiMediator.instructionText.textContent = newText;
+            uiMediator.instructionText.classList.remove('text-fade-out'); // Fade in
+            if (isSessionCompletion) {
+                uiMediator.instructionText.classList.add('session-complete-effect');
+                uiMediator.instructionText.addEventListener('animationend', () => {
+                    uiMediator.instructionText.classList.remove('session-complete-effect');
+                }, { once: true });
+            }
+        }, 300); // Match CSS transition duration
     }
 
     function ensureAudioInitialized() {
@@ -126,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             animationManager.reset();
             startSoundCycle('inhale');
         } else {
-            uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
+            updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
         }
     }
 
@@ -150,6 +177,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Session Duration Logic ---
+    function loadDurationPreference() {
+        const savedDurationKey = localStorage.getItem('sessionDuration');
+        if (savedDurationKey && SESSION_DURATIONS[savedDurationKey]) {
+            currentSessionDuration = SESSION_DURATIONS[savedDurationKey];
+            if (sessionDurationSelect) {
+                sessionDurationSelect.value = savedDurationKey;
+            }
+        } else {
+            if (sessionDurationSelect) {
+                sessionDurationSelect.value = Object.keys(SESSION_DURATIONS).find(key => SESSION_DURATIONS[key] === currentSessionDuration) || '5';
+            }
+        }
+    }
+
+    if (sessionDurationSelect) {
+        sessionDurationSelect.addEventListener('change', (event) => {
+            const selectedDurationKey = event.target.value;
+            if (SESSION_DURATIONS[selectedDurationKey]) {
+                currentSessionDuration = SESSION_DURATIONS[selectedDurationKey];
+                localStorage.setItem('sessionDuration', selectedDurationKey);
+            }
+        });
+    }
+
     // --- Sound Cycle and Animation Control ---
     function startSoundCycle(phase = 'inhale') {
         currentPhaseForResume = phase;
@@ -165,22 +217,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const paceSettings = BREATHING_PACES[currentPace];
 
         if (phase === 'inhale') {
-            uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
+            updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             particleManager.setState('gathering');
             if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
-            uiMediator.updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
+            updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
             particleManager.setState('idle');
             if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
         } else if (phase === 'exhale') {
-            uiMediator.updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
+            updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             particleManager.setState('dispersing');
             if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
-            uiMediator.updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
+            updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
             particleManager.setState('idle');
             if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
@@ -218,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 animationManager.pause();
                 uiMediator.updateSessionButton(false);
                 const currentPaceSettings = BREATHING_PACES[currentPace];
-                uiMediator.updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
+                updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
                 clearTimeout(soundSyncTimeoutId);
                 if (audioManager) audioManager.stopSound();
                 clearTimeout(sessionEndTimerId);
@@ -236,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (animationManager.prefersReducedMotion) {
-                    uiMediator.updateInstructionText("Breathing guidance started (animations reduced).");
+                    updateInstructionText("Breathing guidance started (animations reduced).");
                 }
                 animationManager.play();
                 uiMediator.updateSessionButton(true);
@@ -252,12 +304,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
                             uiMediator.sessionButton.click();
                         }
-                        uiMediator.updateInstructionText("Session complete. Well done!");
+                        updateInstructionText("Session complete. Well done!", true);
                         setTimeout(() => uiMediator.toggleFadeOverlay(false), 3000);
                         sessionIncrementedThisPageLoad = false;
                         showControls();
                     }, 1500);
-                }, 5 * 60 * 1000);
+                }, currentSessionDuration);
 
                 hideControlsAfterDelay();
             }
@@ -297,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearTimeout(soundSyncTimeoutId);
                 audioManager.stopSound();
                 uiMediator.updateSessionButton(false);
-                uiMediator.updateInstructionText('Paused (Tab Hidden)');
+                updateInstructionText('Paused (Tab Hidden)');
                 clearTimeout(sessionEndTimerId);
                 showControls();
             } else {

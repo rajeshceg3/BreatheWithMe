@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.scss">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -37,6 +38,15 @@
             <input type="radio" id="pace-slow" name="breathing-pace" value="slow"> <label for="pace-slow">Slow (6s In, 8s Out)</label><br>
             <input type="radio" id="pace-normal" name="breathing-pace" value="normal" checked> <label for="pace-normal">Normal (4s In, 6s Out)</label><br>
             <input type="radio" id="pace-fast" name="breathing-pace" value="fast"> <label for="pace-fast">Fast (3s In, 4s Out)</label><br>
+        </fieldset>
+        <fieldset>
+            <legend>Session Duration</legend>
+            <select id="session-duration" name="session-duration">
+                <option value="3">3 Minutes</option>
+                <option value="5" selected>5 Minutes</option>
+                <option value="10">10 Minutes</option>
+                <option value="15">15 Minutes</option>
+            </select>
         </fieldset>
         <button id="close-settings-button" aria-label="Close settings panel">Close</button>
     </div>
