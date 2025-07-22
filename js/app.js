@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const breathingCircle = document.getElementById('breathing-circle');
     const paceRadios = document.querySelectorAll('input[name="breathing-pace"]');
     const sessionDurationSelect = document.getElementById('session-duration');
+    const customPaceInputs = document.getElementById('custom-pace-inputs');
+    const customInhale = document.getElementById('custom-inhale');
+    const customExhale = document.getElementById('custom-exhale');
+    const customHold = document.getElementById('custom-hold');
 
     // Managers
     const audioManager = new AudioManager();
@@ -25,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const BREATHING_PACES = {
         slow: { inhale: 6, hold1: 1, exhale: 8, hold2: 1, label: 'Slow' },
         normal: { inhale: 4, hold1: 1, exhale: 6, hold2: 1, label: 'Normal' },
-        fast: { inhale: 3, hold1: 1, exhale: 4, hold2: 1, label: 'Fast' }
+        fast: { inhale: 3, hold1: 1, exhale: 4, hold2: 1, label: 'Fast' },
+        custom: { inhale: 4, hold1: 1, exhale: 6, hold2: 1, label: 'Custom' }
     };
     let currentPace = 'normal';
 
@@ -45,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         audioManager.setEnabled(initialSoundEnabled);
         uiMediator.updateSoundButton(initialSoundEnabled);
         uiMediator.updateThemeButton(themeManager.getTheme());
-        loadPacePreference();
         loadDurationPreference();
+        loadPacePreference();
         welcomeMessage();
     }
 
@@ -143,6 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Breathing Pace Logic ---
     function applyPaceToAnimationAndAudio(paceName) {
+        if (paceName === 'custom') {
+            BREATHING_PACES.custom.inhale = parseInt(customInhale.value, 10);
+            BREATHING_PACES.custom.exhale = parseInt(customExhale.value, 10);
+            BREATHING_PACES.custom.hold1 = parseInt(customHold.value, 10);
+            BREATHING_PACES.custom.hold2 = parseInt(customHold.value, 10);
+        }
+
         if (!BREATHING_PACES[paceName]) return;
         const paceSettings = BREATHING_PACES[paceName];
         currentPace = paceName;
@@ -164,6 +176,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const currentPaceRadio = document.querySelector(`input[name="breathing-pace"][value="${currentPace}"]`);
         if (currentPaceRadio) currentPaceRadio.checked = true;
+
+        if (currentPace === 'custom') {
+            customPaceInputs.classList.remove('hidden');
+            const savedCustomInhale = localStorage.getItem('customInhale');
+            const savedCustomExhale = localStorage.getItem('customExhale');
+            const savedCustomHold = localStorage.getItem('customHold');
+            if (savedCustomInhale) customInhale.value = savedCustomInhale;
+            if (savedCustomExhale) customExhale.value = savedCustomExhale;
+            if (savedCustomHold) customHold.value = savedCustomHold;
+        }
+
         applyPaceToAnimationAndAudio(currentPace);
     }
 
@@ -171,13 +194,26 @@ document.addEventListener('DOMContentLoaded', () => {
         paceRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 const newPace = event.target.value;
+                if (newPace === 'custom') {
+                    customPaceInputs.classList.remove('hidden');
+                } else {
+                    customPaceInputs.classList.add('hidden');
+                }
                 localStorage.setItem('breathingPace', newPace);
                 applyPaceToAnimationAndAudio(newPace);
             });
         });
     }
 
-    // --- Session Duration Logic ---
+    [customInhale, customExhale, customHold].forEach(input => {
+        input.addEventListener('change', () => {
+            localStorage.setItem('customInhale', customInhale.value);
+            localStorage.setItem('customExhale', customExhale.value);
+            localStorage.setItem('customHold', customHold.value);
+            applyPaceToAnimationAndAudio('custom');
+        });
+    });
+
     function loadDurationPreference() {
         const savedDurationKey = localStorage.getItem('sessionDuration');
         if (savedDurationKey && SESSION_DURATIONS[savedDurationKey]) {
@@ -191,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // --- Session Duration Logic ---
 
     if (sessionDurationSelect) {
         sessionDurationSelect.addEventListener('change', (event) => {

@@ -38,6 +38,16 @@
             <input type="radio" id="pace-slow" name="breathing-pace" value="slow"> <label for="pace-slow">Slow (6s In, 8s Out)</label><br>
             <input type="radio" id="pace-normal" name="breathing-pace" value="normal" checked> <label for="pace-normal">Normal (4s In, 6s Out)</label><br>
             <input type="radio" id="pace-fast" name="breathing-pace" value="fast"> <label for="pace-fast">Fast (3s In, 4s Out)</label><br>
+            <input type="radio" id="pace-custom" name="breathing-pace" value="custom">
+            <label for="pace-custom">Custom</label><br>
+            <div id="custom-pace-inputs" class="hidden">
+              <label for="custom-inhale">Inhale:</label>
+              <input type="number" id="custom-inhale" min="1" max="60" value="4">
+              <label for="custom-exhale">Exhale:</label>
+              <input type="number" id="custom-exhale" min="1" max="60" value="6">
+              <label for="custom-hold">Hold:</label>
+              <input type="number" id="custom-hold" min="0" max="60" value="1">
+            </div>
         </fieldset>
         <fieldset>
             <legend>Session Duration</legend>

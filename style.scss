@@ -254,6 +254,23 @@ body {
         margin-top: 20px;
         font-size: 1em;
     }
+
+    #custom-pace-inputs {
+      display: none;
+      margin-top: 10px;
+      padding-left: 20px;
+
+      label {
+        display: inline-block;
+        width: 60px;
+      }
+
+      input {
+        width: 60px;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+    }
 }
 
 // Animations
