@@ -1,3 +1,6 @@
+@use "sass:math";
+@use 'responsive';
+
 // Variables
 :root {
     --transition-duration: 0.3s;
@@ -15,10 +18,19 @@
     --exhale-duration: 6s;
     --hold2-duration: 1s;
     --total-animation-duration: calc(var(--inhale-duration) + var(--hold1-duration) + var(--exhale-duration) + var(--hold2-duration));
-    --inhale-end-percent: calc(var(--inhale-duration) / var(--total-animation-duration) * 100%);
-    --hold1-end-percent: calc((var(--inhale-duration) + var(--hold1-duration)) / var(--total-animation-duration) * 100%);
-    --exhale-end-percent: calc((var(--inhale-duration) + var(--hold1-duration) + var(--exhale-duration)) / var(--total-animation-duration) * 100%);
 }
+
+// SASS variables for static keyframe percentages (based on "normal" pace)
+$inhale-duration: 4;
+$hold1-duration: 1;
+$exhale-duration: 6;
+$hold2-duration: 1;
+$total-duration: $inhale-duration + $hold1-duration + $exhale-duration + $hold2-duration;
+
+$inhale-end-percent: math.div($inhale-duration, $total-duration) * 100%;
+$hold1-end-percent: math.div(($inhale-duration + $hold1-duration), $total-duration) * 100%;
+$exhale-end-percent: math.div(($inhale-duration + $hold1-duration + $exhale-duration), $total-duration) * 100%;
+
 
 // Themes
 :root {
@@ -282,9 +294,9 @@ body {
 
 @keyframes breathe {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-    var(--inhale-end-percent) { transform: scale(var(--circle-scale-max)); box-shadow: 0 0 40px 10px rgba(255, 255, 255, 0.3); }
-    var(--hold1-end-percent) { transform: scale(var(--circle-scale-max)); box-shadow: 0 0 40px 10px rgba(255, 255, 255, 0.3); }
-    var(--exhale-end-percent) { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    #{$inhale-end-percent} { transform: scale(var(--circle-scale-max)); box-shadow: 0 0 40px 10px rgba(255, 255, 255, 0.3); }
+    #{$hold1-end-percent} { transform: scale(var(--circle-scale-max)); box-shadow: 0 0 40px 10px rgba(255, 255, 255, 0.3); }
+    #{$exhale-end-percent} { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
@@ -301,7 +313,6 @@ body {
 }
 
 // Media queries
-@import 'responsive';
 
 // Session end fade overlay
 #fade-overlay {
