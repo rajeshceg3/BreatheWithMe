@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionIncrementedThisPageLoad = false;
     let sessionEndTimerId = null;
     let controlsFadeTimeoutId = null;
+    let sessionEndTime = null;
+    let pauseTime = null;
 
     const BREATHING_PACES = {
         slow: { inhale: 6, hold1: 1, exhale: 8, hold2: 1, label: 'Slow' },
@@ -46,9 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function initialize() {
         themeManager.initialize('light');
         particleManager.init();
-        const initialSoundEnabled = localStorage.getItem('soundEnabled') !== 'false';
-        audioManager.setEnabled(initialSoundEnabled);
-        uiMediator.updateSoundButton(initialSoundEnabled);
+        // Audio is disabled due to missing assets.
+        audioManager.setEnabled(false);
+        uiMediator.updateSoundButton(false);
+        if (uiMediator.soundToggleButton) {
+            uiMediator.soundToggleButton.disabled = true;
+        }
         uiMediator.updateThemeButton(themeManager.getTheme());
         loadDurationPreference();
         loadPacePreference();
@@ -85,12 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function ensureAudioInitialized() {
-        if (!audioInitialized && audioManager) {
-            if (audioManager.getIsEnabled()) {
-                audioManager.initialize();
-            }
-            audioInitialized = true;
-        }
+        // Disabled due to missing audio assets.
+        // if (!audioInitialized && audioManager) {
+        //     if (audioManager.getIsEnabled()) {
+        //         audioManager.initialize();
+        //     }
+        //     audioInitialized = true;
+        // }
     }
 
     // --- Focus Trap Function for Settings Panel ---
@@ -257,22 +263,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phase === 'inhale') {
             updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             particleManager.setState('gathering');
-            if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
+            // if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
             updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
             particleManager.setState('idle');
-            if (audioManager.getIsEnabled()) audioManager.stopSound();
+            // if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
         } else if (phase === 'exhale') {
             updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             particleManager.setState('dispersing');
-            if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
+            // if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
             updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
             particleManager.setState('idle');
-            if (audioManager.getIsEnabled()) audioManager.stopSound();
+            // if (audioManager.getIsEnabled()) audioManager.stopSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
         }
     }
@@ -310,14 +316,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentPaceSettings = BREATHING_PACES[currentPace];
                 updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
                 clearTimeout(soundSyncTimeoutId);
-                if (audioManager) audioManager.stopSound();
+                // if (audioManager) audioManager.stopSound();
                 clearTimeout(sessionEndTimerId);
+                sessionEndTime = null;
+                pauseTime = null;
                 uiMediator.toggleFadeOverlay(false);
                 sessionIncrementedThisPageLoad = false;
                 showControls();
             } else {
                 // Begin the session
-                ensureAudioInitialized();
+                // ensureAudioInitialized();
                 localStorage.setItem('lastUsed', new Date().toISOString());
                 if (!sessionIncrementedThisPageLoad) {
                     sessionCount++;
@@ -334,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Session end timer
                 clearTimeout(sessionEndTimerId);
+                sessionEndTime = Date.now() + currentSessionDuration;
                 uiMediator.toggleFadeOverlay(false);
                 sessionEndTimerId = setTimeout(() => {
                     uiMediator.toggleFadeOverlay(true);
@@ -354,18 +363,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (uiMediator.soundToggleButton) {
-        uiMediator.soundToggleButton.addEventListener('click', () => {
-            const currentSoundState = audioManager.getIsEnabled();
-            audioManager.setEnabled(!currentSoundState);
-            localStorage.setItem('soundEnabled', audioManager.getIsEnabled().toString());
-            uiMediator.updateSoundButton(audioManager.getIsEnabled());
-            if (audioManager.getIsEnabled() && !audioInitialized) {
-                audioManager.initialize();
-                audioInitialized = true;
-            }
-        });
-    }
+    // if (uiMediator.soundToggleButton) {
+    //     uiMediator.soundToggleButton.addEventListener('click', () => {
+    //         const currentSoundState = audioManager.getIsEnabled();
+    //         audioManager.setEnabled(!currentSoundState);
+    //         localStorage.setItem('soundEnabled', audioManager.getIsEnabled().toString());
+    //         uiMediator.updateSoundButton(audioManager.getIsEnabled());
+    //         if (audioManager.getIsEnabled() && !audioInitialized) {
+    //             audioManager.initialize();
+    //             audioInitialized = true;
+    //         }
+    //     });
+    // }
 
     if (uiMediator.themeToggleButton) {
         uiMediator.themeToggleButton.addEventListener('click', () => {
@@ -385,16 +394,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 animationWasActiveBeforeBlur = true;
                 animationManager.pause();
                 clearTimeout(soundSyncTimeoutId);
-                audioManager.stopSound();
+                // audioManager.stopSound();
                 uiMediator.updateSessionButton(false);
                 updateInstructionText('Paused (Tab Hidden)');
                 clearTimeout(sessionEndTimerId);
+                pauseTime = Date.now(); // Record the time when tab was hidden
                 showControls();
             } else {
                 animationWasActiveBeforeBlur = false;
             }
         } else { // Tab is visible
             if (animationWasActiveBeforeBlur) {
+                if (pauseTime && sessionEndTime) {
+                    const pauseDuration = Date.now() - pauseTime;
+                    sessionEndTime += pauseDuration; // Extend the end time by the pause duration
+                    const timeRemaining = sessionEndTime - Date.now();
+
+                    if (timeRemaining > 0) {
+                        sessionEndTimerId = setTimeout(() => {
+                            uiMediator.toggleFadeOverlay(true);
+                            setTimeout(() => {
+                                if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+                                    (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
+                                    uiMediator.sessionButton.click();
+                                }
+                                updateInstructionText("Session complete. Well done!", true);
+                                setTimeout(() => uiMediator.toggleFadeOverlay(false), 3000);
+                                sessionIncrementedThisPageLoad = false;
+                                showControls();
+                            }, 1500);
+                        }, timeRemaining);
+                    }
+                }
+
                 animationManager.play();
                 uiMediator.updateSessionButton(true);
                 startSoundCycle(currentPhaseForResume);
