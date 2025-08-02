@@ -25,11 +25,15 @@ class AnimationManager {
 
     reset() {
         if (this.breathingCircle && !this.prefersReducedMotion) {
+            // By setting the animationName to none and then removing the property,
+            // the browser will re-apply the animations defined in the CSS,
+            // which are 'breathe-core' and 'breathe-glow' for the pseudo-elements.
             this.breathingCircle.style.animationName = 'none';
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    this.breathingCircle.style.animationName = 'breathe';
-                });
+                // This little delay is crucial to ensure the browser has time to process the 'none' value.
+                setTimeout(() => {
+                    this.breathingCircle.style.animationName = '';
+                }, 0);
             });
         }
     }

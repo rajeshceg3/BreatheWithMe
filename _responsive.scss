@@ -1,107 +1,57 @@
-/* Responsive Design */
-
-/* Mobile (320px - 767px) */
-@media screen and (max-width: 767px) {
-    :root {
-        --circle-scale-max: 2.5;
-    }
-
+@media (max-width: 768px) {
     #main-content {
-        padding: 10% 5%;
+        padding: 25%; // Increase padding slightly on smaller screens
     }
 
-    #top-bar {
-        height: auto;
-        min-height: 8vh;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-
-        button {
-            padding: 12px 15px;
-            font-size: 1em;
-        }
+    #breathing-circle {
+        width: 120px;
+        height: 120px;
     }
 
     #bottom-bar {
-        height: auto;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        height: 100px; // A bit more space for controls
+    }
 
-        #instruction-text {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
+    #instruction-text {
+        bottom: 110px; // Adjust to be above the taller bottom bar
+        font-size: 14px;
+    }
+
+    #session-button {
+        font-size: 18px;
+        padding: 10px 25px;
     }
 
     #settings-panel {
-        width: 90vw;
-        right: -100vw;
-        max-width: 300px;
-
-        &.visible {
-            right: 0;
-        }
-
-        h2 {
-            font-size: 1.3em;
-        }
-
-        legend {
-            font-size: 1em;
-        }
-
-        label {
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
+        width: 280px; // Slightly smaller panel
+        right: -280px;
     }
 }
 
-/* Tablet (768px - 1024px) */
-@media screen and (min-width: 768px) and (max-width: 1024px) {
-    #main-content {
-        padding: 12%;
+@media (max-width: 480px) {
+    #top-bar {
+        height: 50px;
+        gap: 5px;
+        padding: 0 10px;
+    }
+
+    #bottom-bar {
+        height: 90px;
+    }
+
+    #instruction-text {
+        bottom: 100px;
+        padding: 0 10px;
+    }
+
+    #breathing-circle {
+        width: 100px;
+        height: 100px;
     }
 
     #settings-panel {
-        width: 320px;
-        right: -350px;
-
-        &.visible {
-            right: 0;
-        }
+        width: 100%;
+        right: -100%;
+        border-left: none;
     }
-}
-
-/* Desktop (1025px+) */
-@media screen and (min-width: 1025px) {
-    .app-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        box-shadow: 0 0 20px var(--shadow-color);
-    }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  #breathing-circle {
-    animation-name: none !important;
-  }
-
-  body {
-    animation-name: none !important;
-  }
-
-  body, .app-container, #breathing-circle, button, #top-bar, #bottom-bar, #settings-panel,
-  #sound-toggle-button, #theme-toggle-button, #settings-toggle-button,
-  #session-button, #close-settings-button, #instruction-text {
-    transition-duration: 0.001s !important;
-    transition-delay: 0s !important;
-  }
-
-  #settings-panel {
-    transition: none !important;
-  }
 }
