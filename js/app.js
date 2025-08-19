@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     uiMediator.instructionText.classList.remove('session-complete-effect');
                 }, { once: true });
             }
-        }, 300); // Match CSS transition duration
+        }, 400); // Match CSS transition duration
     }
 
     function ensureAudioInitialized() {
