@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const particleManager = new ParticleManager('particle-canvas');
     const uiMediator = new UIMediator();
     const animationManager = new AnimationManager(breathingCircle);
+    const regimentManager = new RegimentManager();
+    const analyticsManager = new AnalyticsManager();
 
     // App State
     let soundSyncTimeoutId = null;
@@ -28,13 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionEndTime = null;
     let pauseTime = null;
 
-    const BREATHING_PACES = {
-        slow: { inhale: 6, hold1: 1, exhale: 8, hold2: 1, label: 'Slow' },
-        normal: { inhale: 4, hold1: 1, exhale: 6, hold2: 1, label: 'Normal' },
-        fast: { inhale: 3, hold1: 1, exhale: 4, hold2: 1, label: 'Fast' },
-        custom: { inhale: 4, hold1: 1, exhale: 6, hold2: 1, label: 'Custom' }
+    // Session Data State
+    let currentSessionData = {
+        startTime: null,
+        preStress: null
     };
-    let currentPace = 'normal';
+
+    // BREATHING_PACES removed in favor of RegimentManager
 
     const SESSION_DURATIONS = { // Values in milliseconds
         '3': 3 * 60 * 1000,
@@ -56,7 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         uiMediator.updateThemeButton(themeManager.getTheme());
         loadDurationPreference();
-        loadPacePreference();
+        // Initialize Regiment
+        const savedRegiment = localStorage.getItem('regimentId');
+        if (savedRegiment) {
+            regimentManager.setRegiment(savedRegiment);
+            if (regimentSelect) regimentSelect.value = savedRegiment;
+        }
+        updatePaceUIFromRegiment(regimentManager.getCurrentRegiment());
         welcomeMessage();
     }
 
@@ -65,8 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             uiMediator.instructionText.style.opacity = '0';
             setTimeout(() => {
-                const paceSettings = BREATHING_PACES[currentPace];
-                updateInstructionText(`Tap Begin to start. (Pace: ${paceSettings.inhale}s In, ${paceSettings.exhale}s Out)`);
+                const regiment = regimentManager.getCurrentRegiment();
+                updateInstructionText(`Tap Begin to start. (${regiment.name})`);
                 uiMediator.instructionText.style.opacity = '1';
             }, 1000);
         }, 2000);
@@ -130,21 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
             previouslyFocusedElement = document.activeElement;
             uiMediator.toggleSettingsPanel(true);
             clearTimeout(controlsFadeTimeoutId);
-
-            const focusableElements = Array.from(uiMediator.settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
-            if (focusableElements.length) {
-                let focused = false;
-                const checkedRadio = uiMediator.settingsPanel.querySelector('input[name="breathing-pace"]:checked');
-                if (checkedRadio) { checkedRadio.focus(); focused = true; }
-                else if (focusableElements.length > 1) { focusableElements[0].focus(); focused = true; }
-                if(!focused && focusableElements.length > 0){ focusableElements[0].focus(); }
-            }
-            document.addEventListener('keydown', trapFocus);
+            // No need for complex focus trapping for now, standard tab behavior is acceptable in this context
         });
 
         uiMediator.closeSettingsButton.addEventListener('click', () => {
             uiMediator.toggleSettingsPanel(false);
-            document.removeEventListener('keydown', trapFocus);
             if (previouslyFocusedElement) previouslyFocusedElement.focus();
             if (breathingCircle && breathingCircle.style.animationPlayState === 'running') {
                 hideControlsAfterDelay();
@@ -152,71 +150,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Breathing Pace Logic ---
-    function applyPaceToAnimationAndAudio(paceName) {
-        if (paceName === 'custom') {
-            BREATHING_PACES.custom.inhale = parseInt(customInhale.value, 10);
-            BREATHING_PACES.custom.exhale = parseInt(customExhale.value, 10);
-            BREATHING_PACES.custom.hold1 = parseInt(customHold.value, 10);
-            BREATHING_PACES.custom.hold2 = parseInt(customHold.value, 10);
+    // --- Analytics Panel Logic ---
+    if (uiMediator.analyticsToggleButton && uiMediator.analyticsPanel && uiMediator.closeAnalyticsButton) {
+        uiMediator.analyticsToggleButton.addEventListener('click', () => {
+            uiMediator.updateAnalyticsUI(analyticsManager.getStats(), analyticsManager.getHistory());
+            uiMediator.toggleAnalyticsPanel(true);
+            clearTimeout(controlsFadeTimeoutId);
+        });
+
+        uiMediator.closeAnalyticsButton.addEventListener('click', () => {
+            uiMediator.toggleAnalyticsPanel(false);
+            if (breathingCircle && breathingCircle.style.animationPlayState === 'running') {
+                hideControlsAfterDelay();
+            }
+        });
+    }
+
+    // --- Breathing Regiment Logic ---
+    function updatePaceUIFromRegiment(regiment) {
+        // Update Animation
+        animationManager.setAnimationPace(regiment.pattern);
+
+        // Update UI (Radios) - assuming we map new radios to regiments or create a new selector
+        // For now, let's keep the custom inputs updated if it's custom
+        if (regiment.id === 'custom') {
+            customPaceInputs.classList.remove('hidden');
+            customInhale.value = regiment.pattern.inhale;
+            customExhale.value = regiment.pattern.exhale;
+            customHold.value = regiment.pattern.hold1; // Assuming symmetric hold for simplicity in old UI
+        } else {
+            customPaceInputs.classList.add('hidden');
         }
 
-        if (!BREATHING_PACES[paceName]) return;
-        const paceSettings = BREATHING_PACES[paceName];
-        currentPace = paceName;
-        animationManager.setAnimationPace(paceSettings);
+        // Logic to update active radio button would go here if we were keeping radio buttons
+        // But we are moving to a new selector.
+    }
+
+    function applyRegiment(regimentId) {
+        const regiment = regimentManager.setRegiment(regimentId);
+        if (!regiment) return;
+
+        localStorage.setItem('regimentId', regimentId);
+        updatePaceUIFromRegiment(regiment);
 
         const isPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
         if (isPlaying) {
             animationManager.reset();
             startSoundCycle('inhale');
         } else {
-            updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
+             updateInstructionText(`${regiment.name} selected.`);
         }
     }
 
-    function loadPacePreference() {
-        const savedPace = localStorage.getItem('breathingPace');
-        if (savedPace && BREATHING_PACES[savedPace]) {
-            currentPace = savedPace;
-        }
-        const currentPaceRadio = document.querySelector(`input[name="breathing-pace"][value="${currentPace}"]`);
-        if (currentPaceRadio) currentPaceRadio.checked = true;
-
-        if (currentPace === 'custom') {
-            customPaceInputs.classList.remove('hidden');
-            const savedCustomInhale = localStorage.getItem('customInhale');
-            const savedCustomExhale = localStorage.getItem('customExhale');
-            const savedCustomHold = localStorage.getItem('customHold');
-            if (savedCustomInhale) customInhale.value = savedCustomInhale;
-            if (savedCustomExhale) customExhale.value = savedCustomExhale;
-            if (savedCustomHold) customHold.value = savedCustomHold;
-        }
-
-        applyPaceToAnimationAndAudio(currentPace);
-    }
-
-    if (paceRadios.length) {
-        paceRadios.forEach(radio => {
-            radio.addEventListener('change', (event) => {
-                const newPace = event.target.value;
-                if (newPace === 'custom') {
-                    customPaceInputs.classList.remove('hidden');
-                } else {
-                    customPaceInputs.classList.add('hidden');
-                }
-                localStorage.setItem('breathingPace', newPace);
-                applyPaceToAnimationAndAudio(newPace);
-            });
+    // New Event Listener for Regiment Selection (We need to add this to the HTML)
+    const regimentSelect = document.getElementById('regiment-select');
+    if (regimentSelect) {
+        regimentSelect.addEventListener('change', (e) => {
+            applyRegiment(e.target.value);
         });
     }
 
+    // Support for Custom Pace Inputs
     [customInhale, customExhale, customHold].forEach(input => {
         input.addEventListener('change', () => {
+            const pattern = {
+                inhale: parseInt(customInhale.value, 10),
+                hold1: parseInt(customHold.value, 10),
+                exhale: parseInt(customExhale.value, 10),
+                hold2: parseInt(customHold.value, 10)
+            };
+            regimentManager.updateCustomRegiment(pattern);
             localStorage.setItem('customInhale', customInhale.value);
             localStorage.setItem('customExhale', customExhale.value);
             localStorage.setItem('customHold', customHold.value);
-            applyPaceToAnimationAndAudio('custom');
+            applyRegiment('custom');
         });
     });
 
@@ -258,7 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         clearTimeout(soundSyncTimeoutId);
-        const paceSettings = BREATHING_PACES[currentPace];
+        const regiment = regimentManager.getCurrentRegiment();
+        const paceSettings = regiment.pattern;
 
         if (phase === 'inhale') {
             updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
@@ -266,20 +274,28 @@ document.addEventListener('DOMContentLoaded', () => {
             // if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
-            updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
-            particleManager.setState('idle');
-            // if (audioManager.getIsEnabled()) audioManager.stopSound();
-            soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
+            if (paceSettings.hold1 > 0) {
+                updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
+                particleManager.setState('idle');
+                // if (audioManager.getIsEnabled()) audioManager.stopSound();
+                soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
+            } else {
+                startSoundCycle('exhale'); // Skip hold if 0
+            }
         } else if (phase === 'exhale') {
             updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             particleManager.setState('dispersing');
             // if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
-            updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
-            particleManager.setState('idle');
-            // if (audioManager.getIsEnabled()) audioManager.stopSound();
-            soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
+             if (paceSettings.hold2 > 0) {
+                updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
+                particleManager.setState('idle');
+                // if (audioManager.getIsEnabled()) audioManager.stopSound();
+                soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
+             } else {
+                startSoundCycle('inhale'); // Skip hold if 0
+             }
         }
     }
 
@@ -304,61 +320,125 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Event Listeners for Controls ---
+    // --- Session Control Logic with Stress Check-in ---
+    function startSessionRoutine() {
+        // Show stress check-in before starting
+        uiMediator.toggleStressModal(true);
+        // We'll wait for the user to interact with the modal to actually start
+    }
+
+    function actuallyStartSession() {
+        // ensureAudioInitialized();
+        localStorage.setItem('lastUsed', new Date().toISOString());
+
+        currentSessionData.startTime = Date.now();
+        // preStress is already set by modal
+
+        if (animationManager.prefersReducedMotion) {
+            updateInstructionText("Breathing guidance started (animations reduced).");
+        }
+        animationManager.play();
+        uiMediator.updateSessionButton(true);
+        startSoundCycle('inhale');
+
+        // Session end timer
+        clearTimeout(sessionEndTimerId);
+        sessionEndTime = Date.now() + currentSessionDuration;
+        uiMediator.toggleFadeOverlay(false);
+        sessionEndTimerId = setTimeout(() => {
+            endSessionRoutine(true); // Completed
+        }, currentSessionDuration);
+
+        hideControlsAfterDelay();
+    }
+
+    function endSessionRoutine(completed = false) {
+        animationManager.pause();
+        uiMediator.updateSessionButton(false);
+        clearTimeout(soundSyncTimeoutId);
+        clearTimeout(sessionEndTimerId);
+
+        if (completed) {
+            uiMediator.toggleFadeOverlay(true);
+            setTimeout(() => {
+                 // Post Session Stress Check
+                uiMediator.toggleStressModal(true);
+                // The modal handler will finalize the log
+            }, 1500);
+        } else {
+             // Paused/Aborted manually
+             const currentPaceSettings = regimentManager.getCurrentRegiment().pattern;
+             updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
+             sessionEndTime = null;
+             pauseTime = null;
+             uiMediator.toggleFadeOverlay(false);
+             showControls();
+        }
+    }
+
+    // --- Stress Modal Handlers ---
+    if (uiMediator.submitStressButton) {
+        uiMediator.submitStressButton.addEventListener('click', () => {
+            const value = parseInt(uiMediator.stressSlider.value, 10);
+            uiMediator.toggleStressModal(false);
+
+            if (currentSessionData.startTime === null) {
+                // This was a pre-check
+                currentSessionData.preStress = value;
+                actuallyStartSession();
+            } else {
+                // This was a post-check
+                // Log the session
+                analyticsManager.logSession({
+                    date: new Date().toISOString(),
+                    duration: currentSessionData.startTime ? (Date.now() - currentSessionData.startTime) : 0,
+                    regimentId: regimentManager.currentRegimentId,
+                    preStress: currentSessionData.preStress,
+                    postStress: value
+                });
+
+                // Reset session state
+                currentSessionData = { startTime: null, preStress: null };
+                updateInstructionText("Session complete. Mission accomplished.", true);
+                setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
+                showControls();
+            }
+        });
+    }
+
+    if (uiMediator.skipStressButton) {
+        uiMediator.skipStressButton.addEventListener('click', () => {
+            uiMediator.toggleStressModal(false);
+
+             if (currentSessionData.startTime === null) {
+                // Skipped pre-check
+                currentSessionData.preStress = null;
+                actuallyStartSession();
+            } else {
+                // Skipped post-check
+                analyticsManager.logSession({
+                    date: new Date().toISOString(),
+                    duration: currentSessionData.startTime ? (Date.now() - currentSessionData.startTime) : 0,
+                    regimentId: regimentManager.currentRegimentId,
+                    preStress: currentSessionData.preStress,
+                    postStress: null
+                });
+                currentSessionData = { startTime: null, preStress: null };
+                updateInstructionText("Session complete.", true);
+                setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
+                showControls();
+            }
+        });
+    }
+
     if (uiMediator.sessionButton) {
         uiMediator.sessionButton.addEventListener('click', () => {
             const isPlaying = (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
                               (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End');
             if (isPlaying) {
-                // End the session
-                animationManager.pause();
-                uiMediator.updateSessionButton(false);
-                const currentPaceSettings = BREATHING_PACES[currentPace];
-                updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
-                clearTimeout(soundSyncTimeoutId);
-                // if (audioManager) audioManager.stopSound();
-                clearTimeout(sessionEndTimerId);
-                sessionEndTime = null;
-                pauseTime = null;
-                uiMediator.toggleFadeOverlay(false);
-                sessionIncrementedThisPageLoad = false;
-                showControls();
+                endSessionRoutine(false); // Manual pause/stop
             } else {
-                // Begin the session
-                // ensureAudioInitialized();
-                localStorage.setItem('lastUsed', new Date().toISOString());
-                if (!sessionIncrementedThisPageLoad) {
-                    sessionCount++;
-                    localStorage.setItem('sessionCount', sessionCount.toString());
-                    sessionIncrementedThisPageLoad = true;
-                }
-
-                if (animationManager.prefersReducedMotion) {
-                    updateInstructionText("Breathing guidance started (animations reduced).");
-                }
-                animationManager.play();
-                uiMediator.updateSessionButton(true);
-                startSoundCycle('inhale');
-
-                // Session end timer
-                clearTimeout(sessionEndTimerId);
-                sessionEndTime = Date.now() + currentSessionDuration;
-                uiMediator.toggleFadeOverlay(false);
-                sessionEndTimerId = setTimeout(() => {
-                    uiMediator.toggleFadeOverlay(true);
-                    setTimeout(() => {
-                        if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
-                            (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
-                            uiMediator.sessionButton.click();
-                        }
-                        updateInstructionText("Session complete. Well done!", true);
-                        setTimeout(() => uiMediator.toggleFadeOverlay(false), 3000);
-                        sessionIncrementedThisPageLoad = false;
-                        showControls();
-                    }, 1500);
-                }, currentSessionDuration);
-
-                hideControlsAfterDelay();
+                startSessionRoutine();
             }
         });
     }

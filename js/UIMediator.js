@@ -7,9 +7,33 @@ class UIMediator {
         this.settingsPanel = document.getElementById('settings-panel');
         this.settingsToggleButton = document.getElementById('settings-toggle-button');
         this.closeSettingsButton = document.getElementById('close-settings-button');
+
+        // New UI Elements
+        this.analyticsToggleButton = document.getElementById('analytics-toggle-button');
+        this.analyticsPanel = document.getElementById('analytics-panel');
+        this.closeAnalyticsButton = document.getElementById('close-analytics-button');
+
+        this.stressModal = document.getElementById('stress-modal');
+        this.stressSlider = document.getElementById('stress-slider');
+        this.stressValueDisplay = document.getElementById('stress-value');
+        this.submitStressButton = document.getElementById('submit-stress-button');
+        this.skipStressButton = document.getElementById('skip-stress-button');
+
+        this.statTotalSessions = document.getElementById('stat-total-sessions');
+        this.statTotalMinutes = document.getElementById('stat-total-minutes');
+        this.statStressDelta = document.getElementById('stat-stress-delta');
+        this.historyList = document.getElementById('history-list');
+
         this.fadeOverlay = document.getElementById('fade-overlay');
         this.topBar = document.getElementById('top-bar');
         this.bottomBar = document.getElementById('bottom-bar');
+
+        // Initialize Stress Slider Listener
+        if (this.stressSlider && this.stressValueDisplay) {
+            this.stressSlider.addEventListener('input', (e) => {
+                this.stressValueDisplay.textContent = e.target.value;
+            });
+        }
     }
 
     updateSessionButton(isPlaying) {
@@ -51,6 +75,59 @@ class UIMediator {
         if (this.settingsPanel) {
             this.settingsPanel.classList.toggle('visible', visible);
             this.settingsToggleButton.setAttribute('aria-expanded', visible.toString());
+        }
+    }
+
+    toggleAnalyticsPanel(visible) {
+        if (this.analyticsPanel) {
+             // Because of the 'hidden' utility class which overrides display,
+            // we must also toggle it off when showing the modal
+            this.analyticsPanel.classList.toggle('hidden', !visible);
+
+            if (visible) {
+                requestAnimationFrame(() => {
+                    this.analyticsPanel.classList.add('visible');
+                });
+            } else {
+                this.analyticsPanel.classList.remove('visible');
+            }
+        }
+    }
+
+    toggleStressModal(visible) {
+        if (this.stressModal) {
+            // Because of the 'hidden' utility class which overrides display,
+            // we must also toggle it off when showing the modal
+            this.stressModal.classList.toggle('hidden', !visible);
+
+            // Allow a small tick for the display change to register before fading in
+            if (visible) {
+                requestAnimationFrame(() => {
+                    this.stressModal.classList.add('visible');
+                });
+            } else {
+                this.stressModal.classList.remove('visible');
+            }
+        }
+    }
+
+    updateAnalyticsUI(stats, history) {
+        if (this.statTotalSessions) this.statTotalSessions.textContent = stats.totalSessions;
+        if (this.statTotalMinutes) this.statTotalMinutes.textContent = stats.totalMinutes;
+        if (this.statStressDelta) this.statStressDelta.textContent = stats.avgStressReduction; //  > 0 is good
+
+        if (this.historyList) {
+            this.historyList.innerHTML = '';
+            history.forEach(session => {
+                const li = document.createElement('li');
+                const date = new Date(session.date).toLocaleDateString();
+                const reduction = (session.preStress !== null && session.postStress !== null)
+                    ? `<span style="color: ${session.preStress - session.postStress > 0 ? '#4caf50' : 'inherit'}">-${session.preStress - session.postStress} Stress</span>`
+                    : '<span>--</span>';
+
+                li.innerHTML = `<span>${date}</span> ${reduction}`;
+                this.historyList.appendChild(li);
+            });
         }
     }
 
