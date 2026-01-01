@@ -272,7 +272,64 @@ body {
     }
 }
 
-// Settings panel
+// Modal Styles (Stress, Analytics)
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); // Dim background
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+
+    &.visible {
+        opacity: 1;
+        pointer-events: auto;
+
+        .modal-content {
+             transform: scale(1);
+        }
+    }
+}
+
+.modal-content {
+    background-color: var(--panel-bg-color);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    color: var(--text-color);
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+
+    h2 {
+        text-align: center;
+        font-weight: 300;
+        margin-top: 0;
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+// Settings panel (keeping side drawer style but updating internals)
 #settings-panel {
     position: fixed;
     top: 0;
@@ -326,37 +383,7 @@ body {
         font-size: 1em;
     }
 
-    input[type="radio"] {
-        // Custom styled radio buttons
-        appearance: none;
-        -webkit-appearance: none;
-        width: 18px;
-        height: 18px;
-        border: 2px solid var(--text-color-light);
-        border-radius: 50%;
-        margin-right: 5px;
-        vertical-align: middle;
-        position: relative;
-        cursor: pointer;
-        transition: border-color 0.2s ease;
-
-        &:checked {
-            border-color: var(--text-color);
-            &::after {
-                content: '';
-                position: absolute;
-                top: 50%; left: 50%;
-                transform: translate(-50%, -50%);
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background-color: var(--text-color);
-            }
-        }
-    }
-
     #close-settings-button {
-        // Re-using icon-button style
         position: absolute;
         top: 15px;
         right: 15px;
@@ -409,6 +436,96 @@ body {
         background-repeat: no-repeat;
         background-position: right 10px center;
     }
+}
+
+// New Button Styles for Modals
+.primary-button, .secondary-button {
+    background: transparent;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.primary-button:hover, .secondary-button:hover {
+    background-color: var(--text-color);
+    color: var(--background-gradient-start);
+}
+
+// Stress Slider
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+#stress-slider {
+    flex-grow: 1;
+    accent-color: var(--text-color);
+    cursor: pointer;
+}
+
+.stress-value-display {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+// Analytics Grid
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    text-align: center;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-card h3 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 5px 0;
+    opacity: 0.8;
+}
+
+.stat-card p {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+#history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#history-list li {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#history-list li:last-child {
+    border-bottom: none;
 }
 
 // Animations
