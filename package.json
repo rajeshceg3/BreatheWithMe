@@ -8,7 +8,7 @@
     "start": "http-server -c-1"
   },
   "devDependencies": {
-    "sass": "^1.77.2",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "sass": "^1.77.2"
   }
 }

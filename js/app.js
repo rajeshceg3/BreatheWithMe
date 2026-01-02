@@ -50,12 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function initialize() {
         themeManager.initialize('light');
         particleManager.init();
-        // Audio is disabled due to missing assets.
-        audioManager.setEnabled(false);
-        uiMediator.updateSoundButton(false);
+
+        // Initialize Audio State (default off until user interaction)
+        const savedSoundState = localStorage.getItem('soundEnabled') === 'true';
+        audioManager.setEnabled(savedSoundState);
+        uiMediator.updateSoundButton(savedSoundState);
         if (uiMediator.soundToggleButton) {
-            uiMediator.soundToggleButton.disabled = true;
+             uiMediator.soundToggleButton.disabled = false;
         }
+
         uiMediator.updateThemeButton(themeManager.getTheme());
         loadDurationPreference();
         // Initialize Regiment
@@ -98,13 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function ensureAudioInitialized() {
-        // Disabled due to missing audio assets.
-        // if (!audioInitialized && audioManager) {
-        //     if (audioManager.getIsEnabled()) {
-        //         audioManager.initialize();
-        //     }
-        //     audioInitialized = true;
-        // }
+        if (!audioInitialized && audioManager) {
+            // AudioContext must be resumed/created after a user gesture
+            audioManager.initialize();
+            audioInitialized = true;
+        }
     }
 
     // --- Focus Trap Function for Settings Panel ---
@@ -190,6 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const regiment = regimentManager.setRegiment(regimentId);
         if (!regiment) return;
 
+        // Update Audio Settings
+        if (regiment.audio) {
+            audioManager.setFrequencies(regiment.audio.baseFreq, regiment.audio.binauralBeat);
+        }
+
         localStorage.setItem('regimentId', regimentId);
         updatePaceUIFromRegiment(regiment);
 
@@ -268,16 +274,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const regiment = regimentManager.getCurrentRegiment();
         const paceSettings = regiment.pattern;
 
+        // Sync Audio with Breath
+        if (audioManager.getIsEnabled()) {
+            // Determine duration based on phase
+            const duration = paceSettings[phase];
+            if (duration > 0) {
+                 audioManager.syncWithBreath(phase, duration);
+            }
+        }
+
         if (phase === 'inhale') {
             updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             particleManager.setState('gathering');
-            // if (audioManager.getIsEnabled()) audioManager.playInhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
         } else if (phase === 'hold1') {
             if (paceSettings.hold1 > 0) {
                 updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
                 particleManager.setState('idle');
-                // if (audioManager.getIsEnabled()) audioManager.stopSound();
                 soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
             } else {
                 startSoundCycle('exhale'); // Skip hold if 0
@@ -285,13 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (phase === 'exhale') {
             updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             particleManager.setState('dispersing');
-            // if (audioManager.getIsEnabled()) audioManager.playExhaleSound();
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
              if (paceSettings.hold2 > 0) {
                 updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
                 particleManager.setState('idle');
-                // if (audioManager.getIsEnabled()) audioManager.stopSound();
                 soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
              } else {
                 startSoundCycle('inhale'); // Skip hold if 0
@@ -328,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function actuallyStartSession() {
-        // ensureAudioInitialized();
+        ensureAudioInitialized();
         localStorage.setItem('lastUsed', new Date().toISOString());
 
         currentSessionData.startTime = Date.now();
@@ -354,6 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function endSessionRoutine(completed = false) {
         animationManager.pause();
+        audioManager.stopSound(); // Ensure sound stops
         uiMediator.updateSessionButton(false);
         clearTimeout(soundSyncTimeoutId);
         clearTimeout(sessionEndTimerId);
@@ -443,18 +455,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // if (uiMediator.soundToggleButton) {
-    //     uiMediator.soundToggleButton.addEventListener('click', () => {
-    //         const currentSoundState = audioManager.getIsEnabled();
-    //         audioManager.setEnabled(!currentSoundState);
-    //         localStorage.setItem('soundEnabled', audioManager.getIsEnabled().toString());
-    //         uiMediator.updateSoundButton(audioManager.getIsEnabled());
-    //         if (audioManager.getIsEnabled() && !audioInitialized) {
-    //             audioManager.initialize();
-    //             audioInitialized = true;
-    //         }
-    //     });
-    // }
+    if (uiMediator.soundToggleButton) {
+        uiMediator.soundToggleButton.addEventListener('click', () => {
+            const currentSoundState = audioManager.getIsEnabled();
+            audioManager.setEnabled(!currentSoundState);
+            localStorage.setItem('soundEnabled', audioManager.getIsEnabled().toString());
+            uiMediator.updateSoundButton(audioManager.getIsEnabled());
+            if (audioManager.getIsEnabled() && !audioInitialized) {
+                audioManager.initialize();
+                audioInitialized = true;
+            }
+        });
+    }
 
     if (uiMediator.themeToggleButton) {
         uiMediator.themeToggleButton.addEventListener('click', () => {
@@ -474,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 animationWasActiveBeforeBlur = true;
                 animationManager.pause();
                 clearTimeout(soundSyncTimeoutId);
-                // audioManager.stopSound();
+                audioManager.stopSound();
                 uiMediator.updateSessionButton(false);
                 updateInstructionText('Paused (Tab Hidden)');
                 clearTimeout(sessionEndTimerId);
