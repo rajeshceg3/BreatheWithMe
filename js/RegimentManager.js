@@ -40,6 +40,19 @@ class RegimentManager {
                 pattern: { inhale: 4, hold1: 1, exhale: 6, hold2: 1 },
                 benefits: ['Personalized'],
                 audio: { baseFreq: 220, binauralBeat: 8 } // Low Alpha default
+            },
+            'mission-reset': {
+                id: 'mission-reset',
+                name: 'Mission Reset (Sequence)',
+                description: 'Tactical Decompression Protocol: Sigh -> Box -> Coherence.',
+                isSequence: true,
+                sequence: [
+                    { id: 'physiological-sigh', durationMinutes: 1 },
+                    { id: 'box-breathing', durationMinutes: 3 },
+                    { id: 'coherence', durationMinutes: 2 }
+                ],
+                benefits: ['Full Decompression', 'Focus Recovery'],
+                audio: { baseFreq: 200, binauralBeat: 8 }
             }
         };
         this.currentRegimentId = 'coherence'; // Default
