@@ -13,6 +13,10 @@
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
+
+    <!-- Fade Overlay -->
+    <div id="fade-overlay"></div>
+
     <div class="app-container">
         <header id="top-bar">
             <button id="analytics-toggle-button" class="icon-button" aria-label="Open analytics">
@@ -32,25 +36,29 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
             </button>
         </header>
+
         <main id="main-content">
             <div id="breathing-circle" role="timer" aria-label="Breathing animation guide"></div>
         </main>
+
+        <p id="instruction-text" role="status" aria-live="polite">Breathe deeply. Tap Begin to start your journey.</p>
+
         <footer id="bottom-bar">
             <button id="session-button" aria-label="Begin breathing session">Begin</button>
         </footer>
-        <p id="instruction-text" role="status" aria-live="polite">Welcome. Tap Begin to start.</p>
     </div> <!-- Close app-container -->
 
     <!-- Settings Panel should be a direct child of body for proper fixed positioning -->
+
     <!-- Stress Input Modal -->
     <div id="stress-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="stress-title">
         <div class="modal-content">
             <h2 id="stress-title">Check-in</h2>
-            <p id="stress-prompt">Rate your current stress level:</p>
+            <p id="stress-prompt">How are you feeling right now?</p>
             <div class="slider-container">
-                <span>Low (1)</span>
+                <span>Calm (1)</span>
                 <input type="range" id="stress-slider" min="1" max="10" value="5">
-                <span>High (10)</span>
+                <span>Stressed (10)</span>
             </div>
             <p class="stress-value-display">Level: <span id="stress-value">5</span></p>
             <button id="submit-stress-button" class="primary-button">Continue</button>
@@ -64,18 +72,18 @@
              <button id="close-analytics-button" class="icon-button close-modal" aria-label="Close analytics">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
-            <h2 id="analytics-title">Mission Debrief</h2>
+            <h2 id="analytics-title">Your Journey</h2>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Total Sessions</h3>
+                    <h3>Sessions</h3>
                     <p id="stat-total-sessions">0</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Minutes Trained</h3>
+                    <h3>Minutes</h3>
                     <p id="stat-total-minutes">0</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Stress Delta</h3>
+                    <h3>Relief</h3>
                     <p id="stat-stress-delta">0</p>
                 </div>
             </div>
@@ -85,19 +93,19 @@
     </div>
 
     <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <button id="close-settings-button" class="icon-button" aria-label="Close settings panel">
+        <button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
             <!-- Close Icon -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
-        <h2 id="settings-title">Settings</h2>
+        <h2 id="settings-title">Preferences</h2>
         <fieldset>
-            <legend>Tactical Regiment</legend>
+            <legend>Technique</legend>
             <select id="regiment-select" name="breathing-regiment">
                 <option value="coherence">Heart Coherence (Balance)</option>
-                <option value="box-breathing">Tactical Calm (Box Breathing)</option>
-                <option value="4-7-8">Sleep Aid (4-7-8)</option>
-                <option value="physiological-sigh">Panic Reset (Physiological Sigh)</option>
-                <option value="custom">Custom</option>
+                <option value="box-breathing">Box Breathing (Focus)</option>
+                <option value="4-7-8">4-7-8 (Sleep)</option>
+                <option value="physiological-sigh">Physiological Sigh (Panic)</option>
+                <option value="custom">Custom Rhythm</option>
             </select>
             <div id="custom-pace-inputs" class="hidden">
               <label for="custom-inhale">Inhale:</label>
@@ -109,7 +117,7 @@
             </div>
         </fieldset>
         <fieldset>
-            <legend>Session Duration</legend>
+            <legend>Duration</legend>
             <select id="session-duration" name="session-duration">
                 <option value="3">3 Minutes</option>
                 <option value="5" selected>5 Minutes</option>
@@ -117,10 +125,7 @@
                 <option value="15">15 Minutes</option>
             </select>
         </fieldset>
-        <button id="close-settings-button" aria-label="Close settings panel">Close</button>
     </div>
-
-    <div id="fade-overlay"></div> <!-- For session end fade out -->
 
     <script src="js/AudioManager.js"></script>
     <script src="js/ThemeManager.js"></script>

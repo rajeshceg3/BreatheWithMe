@@ -10,7 +10,7 @@ class ParticleManager {
         this.animationFrameId = null;
         this.state = 'idle'; // 'idle', 'gathering', 'dispersing'
         this.theme = 'light';
-        this.mouse = { x: null, y: null, radius: 80 }; // Mouse interaction properties
+        this.mouse = { x: null, y: null, radius: 150 }; // Larger mouse radius for gentle influence
 
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -29,10 +29,13 @@ class ParticleManager {
             mutations.forEach(mutation => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
                     this.theme = document.documentElement.getAttribute('data-theme') || 'light';
-                    this.particles.forEach(p => this.setParticleAppearance(p));
+                    this.updateThemeColors();
                 }
             });
         }).observe(document.documentElement, { attributes: true });
+
+        // Initial theme set
+        this.theme = document.documentElement.getAttribute('data-theme') || 'light';
     }
 
     resizeCanvas() {
@@ -40,26 +43,48 @@ class ParticleManager {
         this.canvas.height = window.innerHeight;
     }
 
-    setParticleAppearance(p) {
+    updateThemeColors() {
+        this.particles.forEach(p => {
+             p.targetColor = this.getParticleColor();
+        });
+    }
+
+    getParticleColor() {
         const isDark = this.theme === 'dark';
-        const baseColor = isDark ? '173, 216, 230' : '255, 182, 193'; // Light Blue or Light Pink
-        p.color = `rgba(${baseColor}, ${Math.random() * 0.6 + 0.2})`; // Slightly more vibrant
+        if (isDark) {
+             // Night theme: Star-like, cool blues and purples
+             return `rgba(${150 + Math.random() * 50}, ${200 + Math.random() * 55}, 255, ${Math.random() * 0.4 + 0.1})`;
+        } else {
+             // Day theme: Warm, soft sun motes
+             return `rgba(255, ${230 + Math.random() * 25}, ${200 + Math.random() * 55}, ${Math.random() * 0.3 + 0.1})`;
+        }
     }
 
     createParticle() {
         const x = Math.random() * this.canvas.width;
         const y = Math.random() * this.canvas.height;
-        const radius = Math.random() * 1.5 + 1; // Smaller particles
+        const radius = Math.random() * 2 + 0.5; // Varied sizes
         const velocity = {
-            x: (Math.random() - 0.5) * 0.3,
-            y: (Math.random() - 0.5) * 0.3
+            x: (Math.random() - 0.5) * 0.15, // Very slow drift
+            y: (Math.random() - 0.5) * 0.15
         };
-        const particle = { x, y, radius, velocity, originalVelocity: { ...velocity }, wanderAngle: Math.random() * 2 * Math.PI };
-        this.setParticleAppearance(particle);
+
+        const particle = {
+            x,
+            y,
+            radius,
+            velocity,
+            originalVelocity: { ...velocity },
+            wanderAngle: Math.random() * 2 * Math.PI,
+            color: this.getParticleColor(),
+            targetColor: this.getParticleColor(),
+            opacity: Math.random(),
+            opacitySpeed: (Math.random() * 0.01) + 0.002
+        };
         this.particles.push(particle);
     }
 
-    init(count = 100) { // Increased count for a fuller effect
+    init(count = 150) { // High count for immersion
         this.particles = [];
         for (let i = 0; i < count; i++) {
             this.createParticle();
@@ -72,10 +97,10 @@ class ParticleManager {
     animate() {
         this.animationFrameId = requestAnimationFrame(() => this.animate());
 
-        // Use a semi-transparent fill to create trails
-        const trailColor = this.theme === 'dark' ? 'rgba(35, 37, 38, 0.15)' : 'rgba(253, 234, 221, 0.15)';
-        this.ctx.fillStyle = trailColor;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear with fade for trails? No, for this style, clean clear is better for "floating dust"
+        // But let's verify if trails are desired. The prompt asks for "magical".
+        // A very slight trail can be nice.
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.particles.forEach(p => {
             this.updateParticle(p);
@@ -84,7 +109,13 @@ class ParticleManager {
     }
 
     updateParticle(p) {
-        // Mouse interaction
+        // Opacity Twinkle
+        p.opacity += p.opacitySpeed;
+        if (p.opacity > 0.8 || p.opacity < 0.1) {
+            p.opacitySpeed *= -1;
+        }
+
+        // Mouse interaction (Gentle push)
         if (this.mouse.x !== null && this.mouse.y !== null) {
             const dxMouse = p.x - this.mouse.x;
             const dyMouse = p.y - this.mouse.y;
@@ -93,7 +124,7 @@ class ParticleManager {
                 const forceDirectionX = dxMouse / distMouse;
                 const forceDirectionY = dyMouse / distMouse;
                 const force = (this.mouse.radius - distMouse) / this.mouse.radius;
-                const maxForce = 1.5;
+                const maxForce = 0.5; // Gentle push
                 p.velocity.x += forceDirectionX * force * maxForce;
                 p.velocity.y += forceDirectionY * force * maxForce;
             }
@@ -106,71 +137,70 @@ class ParticleManager {
             const dx = centerX - p.x;
             const dy = centerY - p.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            const attractionRadius = 150;
-            if (dist > attractionRadius) {
-                p.velocity.x = (p.velocity.x * 0.98) + (dx / dist) * 0.5;
-                p.velocity.y = (p.velocity.y * 0.98) + (dy / dist) * 0.5;
-            }
+
+            // Orbit effect
+            const angle = Math.atan2(dy, dx);
+            const orbitSpeed = 0.02;
+
+            p.velocity.x += Math.cos(angle + Math.PI/2) * orbitSpeed; // Perpendicular force
+            p.velocity.y += Math.sin(angle + Math.PI/2) * orbitSpeed;
+            p.velocity.x += (dx / dist) * 0.05; // Gentle center pull
+            p.velocity.y += (dy / dist) * 0.05;
+
         } else if (this.state === 'dispersing') {
             const dx = p.x - centerX;
             const dy = p.y - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < this.canvas.width) { // Disperse until off-screen
-                p.velocity.x += dx / dist * (Math.random() * 0.4);
-                p.velocity.y += dy / dist * (Math.random() * 0.4);
-            }
-        } else { // idle
-            // Wander behavior
-            const wanderSpeed = 0.1; // Slightly faster wander
-            p.wanderAngle += (Math.random() - 0.5) * 0.5;
-            p.velocity.x += Math.cos(p.wanderAngle) * wanderSpeed;
-            p.velocity.y += Math.sin(p.wanderAngle) * wanderSpeed;
 
-            // Apply some friction/damping to the idle wander to prevent runaway speeds
-            p.velocity.x *= 0.98;
-            p.velocity.y *= 0.98;
+            p.velocity.x += dx / dist * 0.1;
+            p.velocity.y += dy / dist * 0.1;
+
+        } else { // idle
+            // Organic Wander
+            p.wanderAngle += (Math.random() - 0.5) * 0.2;
+            const wanderForce = 0.005;
+            p.velocity.x += Math.cos(p.wanderAngle) * wanderForce;
+            p.velocity.y += Math.sin(p.wanderAngle) * wanderForce;
+
+            // Return to original speed (damping)
+            p.velocity.x = p.velocity.x * 0.99 + p.originalVelocity.x * 0.01;
+            p.velocity.y = p.velocity.y * 0.99 + p.originalVelocity.y * 0.01;
         }
 
         // Apply velocity
         p.x += p.velocity.x;
         p.y += p.velocity.y;
 
-        // Reset particle if it goes too far off-screen
-        if (p.x < -10 || p.x > this.canvas.width + 10 || p.y < -10 || p.y > this.canvas.height + 10) {
-            if (this.state !== 'idle') { // In gathering or dispersing, reset them
-                 Object.assign(p, this.resetParticle(p));
-            } else {
-                // Wall bounce for idle state
-                if (p.x < 0 || p.x > this.canvas.width) p.velocity.x *= -1;
-                if (p.y < 0 || p.y > this.canvas.height) p.velocity.y *= -1;
-            }
-        }
-    }
-
-    resetParticle(p) {
-        const side = Math.floor(Math.random() * 4);
-        let x, y;
-        if (side === 0) { x = -5; y = Math.random() * this.canvas.height; } // left
-        else if (side === 1) { x = this.canvas.width + 5; y = Math.random() * this.canvas.height; } // right
-        else if (side === 2) { y = -5; x = Math.random() * this.canvas.width; } // top
-        else { y = this.canvas.height + 5; x = Math.random() * this.canvas.width; } // bottom
-        p.x = x;
-        p.y = y;
-        return p;
+        // Wrap around screen instead of bounce for a continuous flow feel
+        if (p.x < -20) p.x = this.canvas.width + 20;
+        if (p.x > this.canvas.width + 20) p.x = -20;
+        if (p.y < -20) p.y = this.canvas.height + 20;
+        if (p.y > this.canvas.height + 20) p.y = -20;
     }
 
     drawParticle(p) {
         this.ctx.beginPath();
         this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = p.color;
+
+        // Parse the color string to inject opacity
+        // Assuming color format is rgba(r, g, b, a)
+        // actually I stored it as the full string, let's just use the calculated opacity override
+        // A better way is to store r,g,b separate.
+        // Let's parse it quickly or reconstruct it.
+
+        // Hacky but fast:
+        // p.color is "rgba(r, g, b, a)"
+        // I want to use p.opacity for the alpha.
+        const rgb = p.color.substring(p.color.indexOf('(') + 1, p.color.lastIndexOf(','));
+        this.ctx.fillStyle = `rgba(${rgb}, ${p.opacity})`;
+
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = `rgba(${rgb}, 0.5)`;
         this.ctx.fill();
+        this.ctx.shadowBlur = 0; // Reset
     }
 
     setState(newState) {
-        if (this.state === 'dispersing' && newState !== 'dispersing') {
-            // When dispersing ends, re-initialize particles for a smooth transition
-            setTimeout(() => this.init(), 500);
-        }
         this.state = newState;
     }
 }
