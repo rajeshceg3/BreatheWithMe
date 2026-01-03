@@ -7,6 +7,7 @@ class UIMediator {
         this.settingsPanel = document.getElementById('settings-panel');
         this.settingsToggleButton = document.getElementById('settings-toggle-button');
         this.closeSettingsButton = document.getElementById('close-settings-button');
+        this.closeSettingsButtonText = document.getElementById('close-settings-button-text');
 
         // New UI Elements
         this.analyticsToggleButton = document.getElementById('analytics-toggle-button');

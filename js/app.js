@@ -151,6 +151,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (uiMediator.closeSettingsButtonText) {
+        uiMediator.closeSettingsButtonText.addEventListener('click', () => {
+            if (uiMediator.closeSettingsButton) uiMediator.closeSettingsButton.click();
+        });
+    }
+
     // --- Analytics Panel Logic ---
     if (uiMediator.analyticsToggleButton && uiMediator.analyticsPanel && uiMediator.closeAnalyticsButton) {
         uiMediator.analyticsToggleButton.addEventListener('click', () => {
