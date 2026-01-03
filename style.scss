@@ -461,3 +461,48 @@ input[type=range]::-webkit-slider-runnable-track {
 
     &.visible { opacity: 1; pointer-events: auto; }
 }
+
+// Chart Styles
+.chart-container {
+    width: 100%;
+    margin: 1.5rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.trend-chart {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+
+    path {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+    }
+
+    .chart-dot {
+        fill: var(--primary-color);
+        transition: r 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+            r: 6;
+        }
+    }
+
+    .chart-zero-line {
+        stroke: rgba(255, 255, 255, 0.1);
+        stroke-dasharray: 4;
+        stroke-width: 1;
+    }
+
+    .empty-chart {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        padding: 2rem 0;
+    }
+}

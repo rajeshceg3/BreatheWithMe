@@ -23,6 +23,7 @@ class UIMediator {
         this.statTotalMinutes = document.getElementById('stat-total-minutes');
         this.statStressDelta = document.getElementById('stat-stress-delta');
         this.historyList = document.getElementById('history-list');
+        this.trendChartContainer = document.getElementById('trend-chart-container');
 
         this.fadeOverlay = document.getElementById('fade-overlay');
         this.topBar = document.getElementById('top-bar');
@@ -111,7 +112,7 @@ class UIMediator {
         }
     }
 
-    updateAnalyticsUI(stats, history) {
+    updateAnalyticsUI(stats, history, trendData) {
         if (this.statTotalSessions) this.statTotalSessions.textContent = stats.totalSessions;
         if (this.statTotalMinutes) this.statTotalMinutes.textContent = stats.totalMinutes;
         if (this.statStressDelta) this.statStressDelta.textContent = stats.avgStressReduction; //  > 0 is good
@@ -122,11 +123,29 @@ class UIMediator {
                 const li = document.createElement('li');
                 const date = new Date(session.date).toLocaleDateString();
                 const reduction = (session.preStress !== null && session.postStress !== null)
-                    ? `<span style="color: ${session.preStress - session.postStress > 0 ? '#4caf50' : 'inherit'}">-${session.preStress - session.postStress} Stress</span>`
+                    ? `<span style="color: ${session.preStress - session.postStress > 0 ? 'var(--primary-color)' : 'inherit'}">-${session.preStress - session.postStress} Stress</span>`
                     : '<span>--</span>';
 
                 li.innerHTML = `<span>${date}</span> ${reduction}`;
                 this.historyList.appendChild(li);
+            });
+        }
+
+        // Check if Visualizer exists in scope (checking window.Visualizer might fail if class is not attached to window explicitly)
+        const visualizerAvailable = typeof Visualizer !== 'undefined';
+
+        if (this.trendChartContainer && visualizerAvailable) {
+            try {
+                const chartHtml = Visualizer.generateTrendChart(trendData);
+                this.trendChartContainer.innerHTML = chartHtml;
+            } catch (e) {
+                console.error("Chart generation failed:", e);
+                this.trendChartContainer.innerHTML = `<div class="error">Chart Error</div>`;
+            }
+        } else {
+            console.warn("Visualizer or Container missing", {
+                container: !!this.trendChartContainer,
+                visualizer: visualizerAvailable
             });
         }
     }

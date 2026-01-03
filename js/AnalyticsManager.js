@@ -48,4 +48,15 @@ class AnalyticsManager {
     getHistory(limit = 5) {
         return this.data.sessions.slice().reverse().slice(0, limit);
     }
+
+    getTrendData(limit = 10) {
+        // Returns last N sessions with stress reduction data
+        return this.data.sessions
+            .filter(s => s.preStress !== null && s.postStress !== null)
+            .slice(-limit) // Get last N
+            .map(s => ({
+                date: s.date,
+                value: s.preStress - s.postStress
+            }));
+    }
 }

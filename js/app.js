@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionEndTime = null;
     let pauseTime = null;
 
+    // Mission Sequence State
+    let isSequenceActive = false;
+    let sequenceQueue = [];
+    let sequenceTotalDuration = 0;
+    let sequenceCurrentIndex = 0;
+
     // Session Data State
     let currentSessionData = {
         startTime: null,
@@ -67,7 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
             regimentManager.setRegiment(savedRegiment);
             if (regimentSelect) regimentSelect.value = savedRegiment;
         }
-        updatePaceUIFromRegiment(regimentManager.getCurrentRegiment());
+
+        // Handle initial load if it's a sequence
+        const currentReg = regimentManager.getCurrentRegiment();
+        if (currentReg.isSequence) {
+             sessionDurationSelect.disabled = true;
+             updateInstructionText(`${currentReg.name} ready.`);
+        } else {
+             updatePaceUIFromRegiment(currentReg);
+        }
+
         welcomeMessage();
     }
 
@@ -154,7 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Analytics Panel Logic ---
     if (uiMediator.analyticsToggleButton && uiMediator.analyticsPanel && uiMediator.closeAnalyticsButton) {
         uiMediator.analyticsToggleButton.addEventListener('click', () => {
-            uiMediator.updateAnalyticsUI(analyticsManager.getStats(), analyticsManager.getHistory());
+            uiMediator.updateAnalyticsUI(
+                analyticsManager.getStats(),
+                analyticsManager.getHistory(),
+                analyticsManager.getTrendData()
+            );
             uiMediator.toggleAnalyticsPanel(true);
             clearTimeout(controlsFadeTimeoutId);
         });
@@ -191,20 +210,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const regiment = regimentManager.setRegiment(regimentId);
         if (!regiment) return;
 
-        // Update Audio Settings
-        if (regiment.audio) {
-            audioManager.setFrequencies(regiment.audio.baseFreq, regiment.audio.binauralBeat);
-        }
-
         localStorage.setItem('regimentId', regimentId);
-        updatePaceUIFromRegiment(regiment);
+
+        if (regiment.isSequence) {
+            // It's a mission profile
+            sessionDurationSelect.disabled = true;
+            updateInstructionText(`${regiment.name} engaged.`);
+            // Don't update pace UI yet, wait for start
+        } else {
+            sessionDurationSelect.disabled = false;
+            // Standard regiment
+            if (regiment.audio) {
+                audioManager.setFrequencies(regiment.audio.baseFreq, regiment.audio.binauralBeat);
+            }
+            updatePaceUIFromRegiment(regiment);
+        }
 
         const isPlaying = breathingCircle && breathingCircle.style.animationPlayState === 'running';
         if (isPlaying) {
-            animationManager.reset();
-            startSoundCycle('inhale');
-        } else {
-             updateInstructionText(`${regiment.name} selected.`);
+             // If playing, we need to restart/reset to apply the new logic
+             endSessionRoutine(false);
+             startSessionRoutine();
         }
     }
 
@@ -345,22 +371,75 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSessionData.startTime = Date.now();
         // preStress is already set by modal
 
+        const currentReg = regimentManager.getCurrentRegiment();
+
+        if (currentReg.isSequence) {
+            // Initialize Sequence Mode
+            isSequenceActive = true;
+            sequenceQueue = [...currentReg.sequence];
+            sequenceCurrentIndex = 0;
+            startSequencePhase();
+        } else {
+            // Standard Mode
+            isSequenceActive = false;
+            startSingleRegiment(currentReg, currentSessionDuration);
+        }
+
         if (animationManager.prefersReducedMotion) {
             updateInstructionText("Breathing guidance started (animations reduced).");
         }
         animationManager.play();
         uiMediator.updateSessionButton(true);
+
+        uiMediator.toggleFadeOverlay(false);
+        hideControlsAfterDelay();
+    }
+
+    function startSingleRegiment(regiment, duration) {
+         if (regiment.audio) {
+            audioManager.setFrequencies(regiment.audio.baseFreq, regiment.audio.binauralBeat);
+        }
+        updatePaceUIFromRegiment(regiment);
         startSoundCycle('inhale');
 
         // Session end timer
         clearTimeout(sessionEndTimerId);
-        sessionEndTime = Date.now() + currentSessionDuration;
-        uiMediator.toggleFadeOverlay(false);
+        sessionEndTime = Date.now() + duration;
         sessionEndTimerId = setTimeout(() => {
             endSessionRoutine(true); // Completed
-        }, currentSessionDuration);
+        }, duration);
+    }
 
-        hideControlsAfterDelay();
+    function startSequencePhase() {
+        if (sequenceCurrentIndex >= sequenceQueue.length) {
+            endSessionRoutine(true); // Sequence Complete
+            return;
+        }
+
+        const phase = sequenceQueue[sequenceCurrentIndex];
+        const regiment = regimentManager.getRegiment(phase.id);
+        const duration = phase.durationMinutes * 60 * 1000;
+
+        updateInstructionText(`Phase ${sequenceCurrentIndex + 1}/${sequenceQueue.length}: ${regiment.name}`);
+
+        // Brief pause for transition text readability? No, seamless is better for military.
+        // Actually, let's flash the instruction text.
+
+        if (regiment.audio) {
+            audioManager.setFrequencies(regiment.audio.baseFreq, regiment.audio.binauralBeat);
+        }
+        updatePaceUIFromRegiment(regiment);
+
+        // Reset animation for new pace
+        animationManager.reset();
+        startSoundCycle('inhale');
+
+        clearTimeout(sessionEndTimerId);
+        sessionEndTime = Date.now() + duration;
+        sessionEndTimerId = setTimeout(() => {
+            sequenceCurrentIndex++;
+            startSequencePhase(); // Recursively start next phase
+        }, duration);
     }
 
     function endSessionRoutine(completed = false) {
