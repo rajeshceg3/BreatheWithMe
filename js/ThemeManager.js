@@ -1,4 +1,4 @@
-class ThemeManager {
+export default class ThemeManager {
     constructor() {
         this.currentTheme = 'light'; // Default, will be overridden
         this.rootElement = document.documentElement;

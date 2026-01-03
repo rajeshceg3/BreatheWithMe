@@ -1,4 +1,4 @@
-class UIMediator {
+export default class UIMediator {
     constructor() {
         this.sessionButton = document.getElementById('session-button');
         this.instructionText = document.getElementById('instruction-text');
@@ -6,7 +6,8 @@ class UIMediator {
         this.themeToggleButton = document.getElementById('theme-toggle-button');
         this.settingsPanel = document.getElementById('settings-panel');
         this.settingsToggleButton = document.getElementById('settings-toggle-button');
-        this.closeSettingsButton = document.getElementById('close-settings-button');
+        // Handle multiple close buttons (icon and text)
+        this.closeSettingsButtons = document.querySelectorAll('.close-settings-trigger');
 
         // New UI Elements
         this.analyticsToggleButton = document.getElementById('analytics-toggle-button');
@@ -39,7 +40,10 @@ class UIMediator {
     updateSessionButton(isPlaying) {
         if (this.sessionButton) {
             this.sessionButton.textContent = isPlaying ? 'End' : 'Begin';
-            this.sessionButton.setAttribute('aria-label', isPlaying ? 'End breathing session' : 'Begin breathing session');
+            this.sessionButton.setAttribute(
+                'aria-label',
+                isPlaying ? 'End breathing session' : 'Begin breathing session',
+            );
         }
     }
 
@@ -80,7 +84,7 @@ class UIMediator {
 
     toggleAnalyticsPanel(visible) {
         if (this.analyticsPanel) {
-             // Because of the 'hidden' utility class which overrides display,
+            // Because of the 'hidden' utility class which overrides display,
             // we must also toggle it off when showing the modal
             this.analyticsPanel.classList.toggle('hidden', !visible);
 
@@ -118,12 +122,13 @@ class UIMediator {
 
         if (this.historyList) {
             this.historyList.innerHTML = '';
-            history.forEach(session => {
+            history.forEach((session) => {
                 const li = document.createElement('li');
                 const date = new Date(session.date).toLocaleDateString();
-                const reduction = (session.preStress !== null && session.postStress !== null)
-                    ? `<span style="color: ${session.preStress - session.postStress > 0 ? '#4caf50' : 'inherit'}">-${session.preStress - session.postStress} Stress</span>`
-                    : '<span>--</span>';
+                const reduction =
+                    session.preStress !== null && session.postStress !== null
+                        ? `<span style="color: ${session.preStress - session.postStress > 0 ? '#4caf50' : 'inherit'}">-${session.preStress - session.postStress} Stress</span>`
+                        : '<span>--</span>';
 
                 li.innerHTML = `<span>${date}</span> ${reduction}`;
                 this.historyList.appendChild(li);

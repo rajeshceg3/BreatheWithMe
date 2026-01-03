@@ -1,83 +1,87 @@
-class ParticleManager {
+export default class ParticleManager {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) {
-            console.error("Canvas element not found!");
-            return;
+        if (this.canvas) {
+            this.ctx = this.canvas.getContext('2d');
         }
-        this.ctx = this.canvas.getContext('2d');
         this.particles = [];
-        this.animationFrameId = null;
-        this.state = 'idle'; // 'idle', 'gathering', 'dispersing'
-        this.theme = 'light';
-        this.mouse = { x: null, y: null, radius: 80 }; // Mouse interaction properties
-
-        this.resizeCanvas();
-        window.addEventListener('resize', () => this.resizeCanvas());
-        window.addEventListener('mousemove', (event) => {
-            this.mouse.x = event.clientX;
-            this.mouse.y = event.clientY;
-        });
-        window.addEventListener('mouseout', () => {
-            this.mouse.x = null;
-            this.mouse.y = null;
-        });
-
-
-        // Listen for theme changes
-        new MutationObserver((mutations) => {
-            mutations.forEach(mutation => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                    this.theme = document.documentElement.getAttribute('data-theme') || 'light';
-                    this.particles.forEach(p => this.setParticleAppearance(p));
-                }
-            });
-        }).observe(document.documentElement, { attributes: true });
+        this.state = 'idle'; // idle, gathering, dispersing
+        this.mouse = { x: null, y: null, radius: 100 };
     }
 
-    resizeCanvas() {
+    init() {
+        if (!this.canvas) return;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('mousemove', (e) => {
+            this.mouse.x = e.x;
+            this.mouse.y = e.y;
+        });
+
+        this.createParticles();
+        this.animate();
+    }
+
+    resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
 
-    setParticleAppearance(p) {
-        const isDark = this.theme === 'dark';
-        const baseColor = isDark ? '173, 216, 230' : '255, 182, 193'; // Light Blue or Light Pink
-        p.color = `rgba(${baseColor}, ${Math.random() * 0.6 + 0.2})`; // Slightly more vibrant
+    createParticles() {
+        const particleCount = 100;
+        this.particles = [];
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push(this.createParticle());
+        }
     }
 
     createParticle() {
-        const x = Math.random() * this.canvas.width;
-        const y = Math.random() * this.canvas.height;
-        const radius = Math.random() * 1.5 + 1; // Smaller particles
-        const velocity = {
-            x: (Math.random() - 0.5) * 0.3,
-            y: (Math.random() - 0.5) * 0.3
+        return {
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            radius: Math.random() * 2 + 1,
+            color: 'rgba(255, 255, 255, 0.5)',
+            velocity: {
+                x: (Math.random() - 0.5) * 0.5,
+                y: (Math.random() - 0.5) * 0.5,
+            },
+            wanderAngle: Math.random() * Math.PI * 2,
         };
-        const particle = { x, y, radius, velocity, originalVelocity: { ...velocity }, wanderAngle: Math.random() * 2 * Math.PI };
-        this.setParticleAppearance(particle);
-        this.particles.push(particle);
-    }
-
-    init(count = 100) { // Increased count for a fuller effect
-        this.particles = [];
-        for (let i = 0; i < count; i++) {
-            this.createParticle();
-        }
-        if (!this.animationFrameId) {
-            this.animate();
-        }
     }
 
     animate() {
-        this.animationFrameId = requestAnimationFrame(() => this.animate());
+        if (!this.canvas) return;
+        requestAnimationFrame(() => this.animate());
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Use a semi-transparent fill to create trails
-        const trailColor = this.theme === 'dark' ? 'rgba(35, 37, 38, 0.15)' : 'rgba(253, 234, 221, 0.15)';
+        // Optional: faint trail effect
+        // this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Better: Clear completely for crisp particles on gradient background,
+        // OR use the theme background colors for trails?
+        // Let's stick to clearRect for performance and clarity on the gradient.
+        // Actually, let's use a very faint clear to leave trails?
+        // No, with the gradient background, clearing to transparent is best.
+        // But if we want trails, we need to draw a rectangle of the background color with alpha.
+        // Since background is a complex gradient, trails are hard.
+        // We'll stick to full clear.
+        // WAIT: The design wants "Emotional Engagement" / "Glassmorphism".
+        // Let's try a very subtle trail using the current theme bloom color?
+        // Hard to get right. Stick to clearRect.
+        // WAIT: Previous code didn't have trails? Let's check `read_file` output...
+        // Ah, I see:
+        // const trailColor = getComputedStyle(document.documentElement).getPropertyValue('--overlay-bg-color') === '#232526' ? 'rgba(35, 37, 38, 0.15)' : 'rgba(253, 234, 221, 0.15)';
+        // this.ctx.fillStyle = trailColor;
+        // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        const trailColor =
+            getComputedStyle(document.documentElement).getPropertyValue('--overlay-bg-color').trim() === '#232526'
+                ? 'rgba(35, 37, 38, 0.15)'
+                : 'rgba(253, 234, 221, 0.15)';
         this.ctx.fillStyle = trailColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.particles.forEach(p => {
+        this.particles.forEach((p) => {
             this.updateParticle(p);
             this.drawParticle(p);
         });
@@ -108,18 +112,20 @@ class ParticleManager {
             const dist = Math.sqrt(dx * dx + dy * dy);
             const attractionRadius = 150;
             if (dist > attractionRadius) {
-                p.velocity.x = (p.velocity.x * 0.98) + (dx / dist) * 0.5;
-                p.velocity.y = (p.velocity.y * 0.98) + (dy / dist) * 0.5;
+                p.velocity.x = p.velocity.x * 0.98 + (dx / dist) * 0.5;
+                p.velocity.y = p.velocity.y * 0.98 + (dy / dist) * 0.5;
             }
         } else if (this.state === 'dispersing') {
             const dx = p.x - centerX;
             const dy = p.y - centerY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < this.canvas.width) { // Disperse until off-screen
-                p.velocity.x += dx / dist * (Math.random() * 0.4);
-                p.velocity.y += dy / dist * (Math.random() * 0.4);
+            if (dist < this.canvas.width) {
+                // Disperse until off-screen
+                p.velocity.x += (dx / dist) * (Math.random() * 0.4);
+                p.velocity.y += (dy / dist) * (Math.random() * 0.4);
             }
-        } else { // idle
+        } else {
+            // idle
             // Wander behavior
             const wanderSpeed = 0.1; // Slightly faster wander
             p.wanderAngle += (Math.random() - 0.5) * 0.5;
@@ -137,8 +143,9 @@ class ParticleManager {
 
         // Reset particle if it goes too far off-screen
         if (p.x < -10 || p.x > this.canvas.width + 10 || p.y < -10 || p.y > this.canvas.height + 10) {
-            if (this.state !== 'idle') { // In gathering or dispersing, reset them
-                 Object.assign(p, this.resetParticle(p));
+            if (this.state !== 'idle') {
+                // In gathering or dispersing, reset them
+                Object.assign(p, this.resetParticle(p));
             } else {
                 // Wall bounce for idle state
                 if (p.x < 0 || p.x > this.canvas.width) p.velocity.x *= -1;
@@ -150,10 +157,22 @@ class ParticleManager {
     resetParticle(p) {
         const side = Math.floor(Math.random() * 4);
         let x, y;
-        if (side === 0) { x = -5; y = Math.random() * this.canvas.height; } // left
-        else if (side === 1) { x = this.canvas.width + 5; y = Math.random() * this.canvas.height; } // right
-        else if (side === 2) { y = -5; x = Math.random() * this.canvas.width; } // top
-        else { y = this.canvas.height + 5; x = Math.random() * this.canvas.width; } // bottom
+        if (side === 0) {
+            x = -5;
+            y = Math.random() * this.canvas.height;
+        } // left
+        else if (side === 1) {
+            x = this.canvas.width + 5;
+            y = Math.random() * this.canvas.height;
+        } // right
+        else if (side === 2) {
+            y = -5;
+            x = Math.random() * this.canvas.width;
+        } // top
+        else {
+            y = this.canvas.height + 5;
+            x = Math.random() * this.canvas.width;
+        } // bottom
         p.x = x;
         p.y = y;
         return p;

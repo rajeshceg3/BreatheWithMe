@@ -1,0 +1,16 @@
+{
+  "name": "Breathe With Me",
+  "short_name": "Breathe",
+  "description": "Tactical Breathing Aid for Stress Reduction",
+  "theme_color": "#fdeadd",
+  "background_color": "#fdeadd",
+  "display": "standalone",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

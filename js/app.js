@@ -1,3 +1,11 @@
+import AudioManager from './AudioManager.js';
+import ThemeManager from './ThemeManager.js';
+import ParticleManager from './ParticleManager.js';
+import UIMediator from './UIMediator.js';
+import AnimationManager from './AnimationManager.js';
+import RegimentManager from './RegimentManager.js';
+import AnalyticsManager from './AnalyticsManager.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const breathingCircle = document.getElementById('breathing-circle');
@@ -33,16 +41,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Session Data State
     let currentSessionData = {
         startTime: null,
-        preStress: null
+        preStress: null,
     };
 
     // BREATHING_PACES removed in favor of RegimentManager
 
-    const SESSION_DURATIONS = { // Values in milliseconds
-        '3': 3 * 60 * 1000,
-        '5': 5 * 60 * 1000,
-        '10': 10 * 60 * 1000,
-        '15': 15 * 60 * 1000
+    const SESSION_DURATIONS = {
+        // Values in milliseconds
+        3: 3 * 60 * 1000,
+        5: 5 * 60 * 1000,
+        10: 10 * 60 * 1000,
+        15: 15 * 60 * 1000,
     };
     let currentSessionDuration = SESSION_DURATIONS['5']; // Default to 5 minutes
 
@@ -56,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         audioManager.setEnabled(savedSoundState);
         uiMediator.updateSoundButton(savedSoundState);
         if (uiMediator.soundToggleButton) {
-             uiMediator.soundToggleButton.disabled = false;
+            uiMediator.soundToggleButton.disabled = false;
         }
 
         uiMediator.updateThemeButton(themeManager.getTheme());
@@ -65,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedRegiment = localStorage.getItem('regimentId');
         if (savedRegiment) {
             regimentManager.setRegiment(savedRegiment);
+            const regimentSelect = document.getElementById('regiment-select');
             if (regimentSelect) regimentSelect.value = savedRegiment;
         }
         updatePaceUIFromRegiment(regimentManager.getCurrentRegiment());
@@ -93,9 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
             uiMediator.instructionText.classList.remove('text-fade-out'); // Fade in
             if (isSessionCompletion) {
                 uiMediator.instructionText.classList.add('session-complete-effect');
-                uiMediator.instructionText.addEventListener('animationend', () => {
-                    uiMediator.instructionText.classList.remove('session-complete-effect');
-                }, { once: true });
+                uiMediator.instructionText.addEventListener(
+                    'animationend',
+                    () => {
+                        uiMediator.instructionText.classList.remove('session-complete-effect');
+                    },
+                    { once: true },
+                );
             }
         }, 400); // Match CSS transition duration
     }
@@ -113,28 +127,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!uiMediator.settingsPanel || !uiMediator.settingsPanel.classList.contains('visible')) return;
 
         if (event.key === 'Escape') {
-            if (uiMediator.closeSettingsButton) uiMediator.closeSettingsButton.click();
+            // Trigger the first close button if escape is pressed
+            if (uiMediator.closeSettingsButtons && uiMediator.closeSettingsButtons.length > 0) {
+                uiMediator.closeSettingsButtons[0].click();
+            }
             return;
         }
         if (event.key !== 'Tab') return;
 
-        const focusableElements = Array.from(uiMediator.settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+        const focusableElements = Array.from(
+            uiMediator.settingsPanel.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            ),
+        ).filter((el) => el.offsetParent !== null);
         if (!focusableElements.length) return;
         const firstFocusableElement = focusableElements[0];
         const lastFocusableElement = focusableElements[focusableElements.length - 1];
         if (event.shiftKey) {
             if (document.activeElement === firstFocusableElement) {
-                lastFocusableElement.focus(); event.preventDefault();
+                lastFocusableElement.focus();
+                event.preventDefault();
             }
         } else {
             if (document.activeElement === lastFocusableElement) {
-                firstFocusableElement.focus(); event.preventDefault();
+                firstFocusableElement.focus();
+                event.preventDefault();
             }
         }
     }
 
     // --- Settings Panel Logic ---
-    if (uiMediator.settingsToggleButton && uiMediator.settingsPanel && uiMediator.closeSettingsButton) {
+    if (uiMediator.settingsToggleButton && uiMediator.settingsPanel) {
         uiMediator.settingsToggleButton.addEventListener('click', () => {
             previouslyFocusedElement = document.activeElement;
             uiMediator.toggleSettingsPanel(true);
@@ -142,13 +165,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // No need for complex focus trapping for now, standard tab behavior is acceptable in this context
         });
 
-        uiMediator.closeSettingsButton.addEventListener('click', () => {
-            uiMediator.toggleSettingsPanel(false);
-            if (previouslyFocusedElement) previouslyFocusedElement.focus();
-            if (breathingCircle && breathingCircle.style.animationPlayState === 'running') {
-                hideControlsAfterDelay();
-            }
-        });
+        if (uiMediator.closeSettingsButtons) {
+            uiMediator.closeSettingsButtons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    uiMediator.toggleSettingsPanel(false);
+                    if (previouslyFocusedElement) previouslyFocusedElement.focus();
+                    if (breathingCircle && breathingCircle.style.animationPlayState === 'running') {
+                        hideControlsAfterDelay();
+                    }
+                });
+            });
+        }
     }
 
     // --- Analytics Panel Logic ---
@@ -204,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             animationManager.reset();
             startSoundCycle('inhale');
         } else {
-             updateInstructionText(`${regiment.name} selected.`);
+            updateInstructionText(`${regiment.name} selected.`);
         }
     }
 
@@ -217,13 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Support for Custom Pace Inputs
-    [customInhale, customExhale, customHold].forEach(input => {
+    [customInhale, customExhale, customHold].forEach((input) => {
         input.addEventListener('change', () => {
             const pattern = {
                 inhale: parseInt(customInhale.value, 10),
                 hold1: parseInt(customHold.value, 10),
                 exhale: parseInt(customExhale.value, 10),
-                hold2: parseInt(customHold.value, 10)
+                hold2: parseInt(customHold.value, 10),
             };
             regimentManager.updateCustomRegiment(pattern);
             localStorage.setItem('customInhale', customInhale.value);
@@ -242,7 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             if (sessionDurationSelect) {
-                sessionDurationSelect.value = Object.keys(SESSION_DURATIONS).find(key => SESSION_DURATIONS[key] === currentSessionDuration) || '5';
+                sessionDurationSelect.value =
+                    Object.keys(SESSION_DURATIONS).find((key) => SESSION_DURATIONS[key] === currentSessionDuration) ||
+                    '5';
             }
         }
     }
@@ -263,11 +292,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function startSoundCycle(phase = 'inhale') {
         currentPhaseForResume = phase;
 
-        const isEffectivelyPlaying = (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
-                                   (!animationManager.prefersReducedMotion && breathingCircle && breathingCircle.style.animationPlayState === 'running');
+        const isEffectivelyPlaying =
+            (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
+            (!animationManager.prefersReducedMotion &&
+                breathingCircle &&
+                breathingCircle.style.animationPlayState === 'running');
 
         if (!isEffectivelyPlaying) {
-            clearTimeout(soundSyncTimeoutId); return;
+            clearTimeout(soundSyncTimeoutId);
+            return;
         }
 
         clearTimeout(soundSyncTimeoutId);
@@ -279,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Determine duration based on phase
             const duration = paceSettings[phase];
             if (duration > 0) {
-                 audioManager.syncWithBreath(phase, duration);
+                audioManager.syncWithBreath(phase, duration);
             }
         }
 
@@ -300,13 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
             particleManager.setState('dispersing');
             soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
         } else if (phase === 'hold2') {
-             if (paceSettings.hold2 > 0) {
+            if (paceSettings.hold2 > 0) {
                 updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
                 particleManager.setState('idle');
                 soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
-             } else {
+            } else {
                 startSoundCycle('inhale'); // Skip hold if 0
-             }
+            }
         }
     }
 
@@ -324,8 +357,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.body.addEventListener('mousemove', () => {
-        if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
-           (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
+        if (
+            (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+            (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')
+        ) {
             showControls();
             hideControlsAfterDelay();
         }
@@ -346,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // preStress is already set by modal
 
         if (animationManager.prefersReducedMotion) {
-            updateInstructionText("Breathing guidance started (animations reduced).");
+            updateInstructionText('Breathing guidance started (animations reduced).');
         }
         animationManager.play();
         uiMediator.updateSessionButton(true);
@@ -373,18 +408,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (completed) {
             uiMediator.toggleFadeOverlay(true);
             setTimeout(() => {
-                 // Post Session Stress Check
+                // Post Session Stress Check
                 uiMediator.toggleStressModal(true);
                 // The modal handler will finalize the log
             }, 1500);
         } else {
-             // Paused/Aborted manually
-             const currentPaceSettings = regimentManager.getCurrentRegiment().pattern;
-             updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
-             sessionEndTime = null;
-             pauseTime = null;
-             uiMediator.toggleFadeOverlay(false);
-             showControls();
+            // Paused/Aborted manually
+            const currentPaceSettings = regimentManager.getCurrentRegiment().pattern;
+            updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
+            sessionEndTime = null;
+            pauseTime = null;
+            uiMediator.toggleFadeOverlay(false);
+            showControls();
         }
     }
 
@@ -403,15 +438,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Log the session
                 analyticsManager.logSession({
                     date: new Date().toISOString(),
-                    duration: currentSessionData.startTime ? (Date.now() - currentSessionData.startTime) : 0,
+                    duration: currentSessionData.startTime ? Date.now() - currentSessionData.startTime : 0,
                     regimentId: regimentManager.currentRegimentId,
                     preStress: currentSessionData.preStress,
-                    postStress: value
+                    postStress: value,
                 });
 
                 // Reset session state
                 currentSessionData = { startTime: null, preStress: null };
-                updateInstructionText("Session complete. Mission accomplished.", true);
+                updateInstructionText('Session complete. Mission accomplished.', true);
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 showControls();
             }
@@ -422,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uiMediator.skipStressButton.addEventListener('click', () => {
             uiMediator.toggleStressModal(false);
 
-             if (currentSessionData.startTime === null) {
+            if (currentSessionData.startTime === null) {
                 // Skipped pre-check
                 currentSessionData.preStress = null;
                 actuallyStartSession();
@@ -430,13 +465,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Skipped post-check
                 analyticsManager.logSession({
                     date: new Date().toISOString(),
-                    duration: currentSessionData.startTime ? (Date.now() - currentSessionData.startTime) : 0,
+                    duration: currentSessionData.startTime ? Date.now() - currentSessionData.startTime : 0,
                     regimentId: regimentManager.currentRegimentId,
                     preStress: currentSessionData.preStress,
-                    postStress: null
+                    postStress: null,
                 });
                 currentSessionData = { startTime: null, preStress: null };
-                updateInstructionText("Session complete.", true);
+                updateInstructionText('Session complete.', true);
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 showControls();
             }
@@ -445,8 +480,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (uiMediator.sessionButton) {
         uiMediator.sessionButton.addEventListener('click', () => {
-            const isPlaying = (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
-                              (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End');
+            const isPlaying =
+                (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+                (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End');
             if (isPlaying) {
                 endSessionRoutine(false); // Manual pause/stop
             } else {
@@ -478,8 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tab Visibility Handling ---
     document.addEventListener('visibilitychange', () => {
         if (!breathingCircle) return;
-        const isEffectivelyPlaying = (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
-                                   (!animationManager.prefersReducedMotion && breathingCircle && breathingCircle.style.animationPlayState === 'running');
+        const isEffectivelyPlaying =
+            (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
+            (!animationManager.prefersReducedMotion &&
+                breathingCircle &&
+                breathingCircle.style.animationPlayState === 'running');
 
         if (document.hidden) {
             if (isEffectivelyPlaying) {
@@ -495,7 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 animationWasActiveBeforeBlur = false;
             }
-        } else { // Tab is visible
+        } else {
+            // Tab is visible
             if (animationWasActiveBeforeBlur) {
                 if (pauseTime && sessionEndTime) {
                     const pauseDuration = Date.now() - pauseTime;
@@ -506,11 +546,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         sessionEndTimerId = setTimeout(() => {
                             uiMediator.toggleFadeOverlay(true);
                             setTimeout(() => {
-                                if ((breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
-                                    (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End')) {
+                                if (
+                                    (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
+                                    (animationManager.prefersReducedMotion &&
+                                        uiMediator.sessionButton.textContent === 'End')
+                                ) {
                                     uiMediator.sessionButton.click();
                                 }
-                                updateInstructionText("Session complete. Well done!", true);
+                                updateInstructionText('Session complete. Well done!', true);
                                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 3000);
                                 sessionIncrementedThisPageLoad = false;
                                 showControls();

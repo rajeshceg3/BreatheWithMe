@@ -1,4 +1,4 @@
-class AnalyticsManager {
+export default class AnalyticsManager {
     constructor() {
         this.storageKey = 'breath_analytics_data';
         this.data = this.loadData();
@@ -22,14 +22,14 @@ class AnalyticsManager {
     getStats() {
         const sessions = this.data.sessions;
         const totalSessions = sessions.length;
-        const totalMinutes = sessions.reduce((acc, curr) => acc + (curr.duration / 60000), 0);
+        const totalMinutes = sessions.reduce((acc, curr) => acc + curr.duration / 60000, 0);
 
         let avgStressReduction = 0;
         let stressDataCount = 0;
 
-        sessions.forEach(s => {
+        sessions.forEach((s) => {
             if (s.preStress !== null && s.postStress !== null) {
-                avgStressReduction += (s.preStress - s.postStress);
+                avgStressReduction += s.preStress - s.postStress;
                 stressDataCount++;
             }
         });
@@ -41,7 +41,7 @@ class AnalyticsManager {
         return {
             totalSessions,
             totalMinutes: Math.round(totalMinutes),
-            avgStressReduction: avgStressReduction.toFixed(1)
+            avgStressReduction: avgStressReduction.toFixed(1),
         };
     }
 
