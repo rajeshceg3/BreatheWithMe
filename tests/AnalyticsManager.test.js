@@ -21,7 +21,7 @@ Object.defineProperty(window, 'localStorage', {
     value: localStorageMock
 });
 
-const analyticsManagerCode = fs.readFileSync(path.resolve(__dirname, '../js/AnalyticsManager.js'), 'utf8');
+const analyticsManagerCode = fs.readFileSync(path.resolve(__dirname, '../public/js/AnalyticsManager.js'), 'utf8');
 const evalScript = analyticsManagerCode + '; window.AnalyticsManager = AnalyticsManager;';
 eval(evalScript);
 

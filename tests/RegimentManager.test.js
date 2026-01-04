@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read file content
-const regimentManagerCode = fs.readFileSync(path.resolve(__dirname, '../js/RegimentManager.js'), 'utf8');
+const regimentManagerCode = fs.readFileSync(path.resolve(__dirname, '../public/js/RegimentManager.js'), 'utf8');
 
 // Execute code in global scope
 // We wrap it to ensure we capture the class

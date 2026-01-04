@@ -5,10 +5,10 @@
   "main": "js/app.js",
   "scripts": {
     "build": "npm run compile:sass",
-    "compile:sass": "sass style.scss style.css --no-source-map --style=compressed",
-    "start": "http-server -c-1",
+    "compile:sass": "sass style.scss public/style.css --no-source-map --style=compressed",
+    "start": "http-server public -c-1",
     "test": "jest",
-    "lint": "eslint js/"
+    "lint": "eslint public/js/"
   },
   "devDependencies": {
     "eslint": "^9.3.0",

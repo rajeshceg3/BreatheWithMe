@@ -13,7 +13,8 @@ const ASSETS_TO_CACHE = [
     './js/RegimentManager.js',
     './js/SessionManager.js',
     './js/ThemeManager.js',
-    './js/UIMediator.js'
+    './js/UIMediator.js',
+    './js/Visualizer.js'
 ];
 
 self.addEventListener('install', (event) => {

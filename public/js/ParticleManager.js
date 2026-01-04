@@ -118,6 +118,11 @@ class ParticleManager {
     }
 
     animate() {
+        if (document.hidden) {
+            this.animationFrameId = requestAnimationFrame(() => this.animate());
+            return; // Skip rendering when hidden to save battery
+        }
+
         this.animationFrameId = requestAnimationFrame(() => this.animate());
 
         // Clear with fade for trails? No, for this style, clean clear is better for "floating dust"

@@ -30,6 +30,7 @@ class SessionManager {
             preStress: null
         };
         this.currentPhaseForResume = 'inhale';
+        this.nextPhaseTime = null; // Drift correction
         this.animationWasActiveBeforeBlur = false;
 
         // Sequence State
@@ -102,6 +103,7 @@ class SessionManager {
             }
              this.animationManager.play();
              this.uiMediator.updateSessionButton(true);
+             this.nextPhaseTime = null; // Reset drift correction anchor
              this.startSoundCycle('inhale');
 
              clearTimeout(this.sessionEndTimerId);
@@ -150,6 +152,7 @@ class SessionManager {
         this.uiMediator.updateSessionButton(false);
         clearTimeout(this.soundSyncTimeoutId);
         clearTimeout(this.sessionEndTimerId);
+        this.nextPhaseTime = null;
 
         if (completed) {
             this.uiMediator.toggleFadeOverlay(true);
@@ -207,27 +210,52 @@ class SessionManager {
             }
         }
 
+        // Calculate Next Phase Logic (Drift Correction)
+        const durationSeconds = paceSettings[phase];
+        const durationMs = durationSeconds * 1000;
+
+        // If this is a fresh start (nextPhaseTime is null), reset the timer anchor
+        if (this.nextPhaseTime === null) {
+             this.nextPhaseTime = Date.now() + durationMs;
+        } else {
+             // Normal progression: target is previous target + duration
+             this.nextPhaseTime = this.nextPhaseTime + durationMs;
+        }
+
+        // Calculate delay until next phase
+        const now = Date.now();
+        let delay = this.nextPhaseTime - now;
+
+        // If we are significantly lagging (more than 100ms), reset the anchor to avoid fast-forwarding
+        if (delay < -100) {
+             this.nextPhaseTime = now + durationMs;
+             delay = durationMs;
+        }
+
+        // Ensure non-negative delay
+        delay = Math.max(0, delay);
+
         if (phase === 'inhale') {
             this.uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             this.particleManager.setPhase('inhale');
-            this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold1'), paceSettings.inhale * 1000);
+            this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold1'), delay);
         } else if (phase === 'hold1') {
             if (paceSettings.hold1 > 0) {
                 this.uiMediator.updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
                 this.particleManager.setPhase('idle');
-                this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('exhale'), paceSettings.hold1 * 1000);
+                this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('exhale'), delay);
             } else {
                 this.startSoundCycle('exhale');
             }
         } else if (phase === 'exhale') {
             this.uiMediator.updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             this.particleManager.setPhase('exhale');
-            this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold2'), paceSettings.exhale * 1000);
+            this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold2'), delay);
         } else if (phase === 'hold2') {
              if (paceSettings.hold2 > 0) {
                 this.uiMediator.updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
                 this.particleManager.setPhase('idle');
-                this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('inhale'), paceSettings.hold2 * 1000);
+                this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('inhale'), delay);
              } else {
                 this.startSoundCycle('inhale');
              }
