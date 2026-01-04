@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioInitialized = false;
     let animationWasActiveBeforeBlur = false;
     let currentPhaseForResume = 'inhale';
+    let nextPhaseTime = null; // Timestamp for drift correction
     let previouslyFocusedElement = null;
     let sessionCount = 0;
     let sessionIncrementedThisPageLoad = false;
@@ -260,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Sound Cycle and Animation Control ---
-    function startSoundCycle(phase = 'inhale') {
+    function startSoundCycle(phase = 'inhale', isResume = false) {
         currentPhaseForResume = phase;
 
         const isEffectivelyPlaying = (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End') ||
@@ -283,29 +284,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Calculate Next Phase Logic (Drift Correction)
+        const durationSeconds = paceSettings[phase];
+        const durationMs = durationSeconds * 1000;
+
+        // If this is a fresh start or resume, we reset the timer anchor
+        if (nextPhaseTime === null || isResume) {
+             nextPhaseTime = Date.now() + durationMs;
+        } else {
+             // Normal progression: target is previous target + duration
+             nextPhaseTime = nextPhaseTime + durationMs;
+        }
+
+        // Calculate delay until next phase
+        const now = Date.now();
+        let delay = nextPhaseTime - now;
+
+        // If we are significantly lagging (more than 100ms), reset the anchor to avoid fast-forwarding
+        if (delay < -100) {
+             nextPhaseTime = now + durationMs;
+             delay = durationMs;
+        }
+
+        // Ensure non-negative delay
+        delay = Math.max(0, delay);
+
         if (phase === 'inhale') {
             updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             particleManager.setState('gathering');
-            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), paceSettings.inhale * 1000);
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold1'), delay);
         } else if (phase === 'hold1') {
             if (paceSettings.hold1 > 0) {
                 updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
                 particleManager.setState('idle');
-                soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), paceSettings.hold1 * 1000);
+                soundSyncTimeoutId = setTimeout(() => startSoundCycle('exhale'), delay);
             } else {
-                startSoundCycle('exhale'); // Skip hold if 0
+                // If duration is 0, we don't wait. But to keep logic simple, we just call next immediately.
+                // However, we shouldn't add to nextPhaseTime if duration was 0 effectively.
+                // The logic above added 0 ms.
+                startSoundCycle('exhale');
             }
         } else if (phase === 'exhale') {
             updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             particleManager.setState('dispersing');
-            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), paceSettings.exhale * 1000);
+            soundSyncTimeoutId = setTimeout(() => startSoundCycle('hold2'), delay);
         } else if (phase === 'hold2') {
              if (paceSettings.hold2 > 0) {
                 updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
                 particleManager.setState('idle');
-                soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), paceSettings.hold2 * 1000);
+                soundSyncTimeoutId = setTimeout(() => startSoundCycle('inhale'), delay);
              } else {
-                startSoundCycle('inhale'); // Skip hold if 0
+                startSoundCycle('inhale');
              }
         }
     }
@@ -350,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         animationManager.play();
         uiMediator.updateSessionButton(true);
+        nextPhaseTime = null; // Reset drift correction anchor
         startSoundCycle('inhale');
 
         // Session end timer
@@ -369,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uiMediator.updateSessionButton(false);
         clearTimeout(soundSyncTimeoutId);
         clearTimeout(sessionEndTimerId);
+        nextPhaseTime = null;
 
         if (completed) {
             uiMediator.toggleFadeOverlay(true);
@@ -521,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 animationManager.play();
                 uiMediator.updateSessionButton(true);
-                startSoundCycle(currentPhaseForResume);
+                startSoundCycle(currentPhaseForResume, true); // True for resume
                 animationWasActiveBeforeBlur = false;
                 hideControlsAfterDelay();
             }

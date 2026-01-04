@@ -2,10 +2,10 @@
   "name": "breathe-with-me",
   "version": "1.0.0",
   "description": "A breathing exercise web application",
-  "main": "js/app.js",
+  "main": "public/js/app.js",
   "scripts": {
-    "compile:sass": "sass style.scss style.css",
-    "start": "http-server -c-1"
+    "compile:sass": "sass style.scss public/style.css",
+    "start": "http-server public -c-1"
   },
   "devDependencies": {
     "http-server": "^14.1.1",
