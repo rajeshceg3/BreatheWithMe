@@ -77,6 +77,38 @@ class AnalyticsManager {
         return this.data.sessions.slice().reverse().slice(0, limit);
     }
 
+    /**
+     * Retrieves session statistics filtered by a specific regiment/protocol ID.
+     * @param {string} regimentId - The ID of the regiment to filter by.
+     * @returns {Object} Stats object for the specific protocol.
+     */
+    getProtocolStats(regimentId) {
+        const sessions = this.data.sessions.filter(s => s.regimentId === regimentId);
+        const totalSessions = sessions.length;
+        const totalMinutes = sessions.reduce((acc, curr) => acc + (curr.duration / 60000), 0);
+
+        let avgStressReduction = 0;
+        let stressDataCount = 0;
+
+        sessions.forEach(s => {
+            if (s.preStress !== null && s.postStress !== null) {
+                avgStressReduction += (s.preStress - s.postStress);
+                stressDataCount++;
+            }
+        });
+
+        if (stressDataCount > 0) {
+            avgStressReduction = avgStressReduction / stressDataCount;
+        }
+
+        return {
+            regimentId,
+            totalSessions,
+            totalMinutes: Math.round(totalMinutes),
+            avgStressReduction: avgStressReduction.toFixed(1)
+        };
+    }
+
     getTrendData(limit = 10) {
         // Returns last N sessions with stress reduction data
         return this.data.sessions

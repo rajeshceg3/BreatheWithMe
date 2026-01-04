@@ -97,6 +97,41 @@
         </div>
     </div>
 
+    <!-- Mission Profile Editor Modal -->
+    <div id="profile-editor-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="profile-editor-title">
+        <div class="modal-content profile-editor-content">
+            <h2 id="profile-editor-title">New Mission Profile</h2>
+
+            <div class="input-group">
+                <label for="profile-name">Profile Name</label>
+                <input type="text" id="profile-name" placeholder="e.g., Morning Assault">
+            </div>
+
+            <div class="stages-container">
+                <h3>Mission Phases</h3>
+                <ul id="profile-stages-list">
+                    <!-- Dynamic list items -->
+                </ul>
+            </div>
+
+            <div class="add-stage-form">
+                <select id="stage-regiment-select">
+                    <!-- Populated by JS -->
+                </select>
+                <div class="duration-input">
+                    <input type="number" id="stage-duration" min="1" max="60" value="2">
+                    <span>min</span>
+                </div>
+                <button id="add-stage-button" class="secondary-button small">Add Phase</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="cancel-profile-button" class="secondary-button">Cancel</button>
+                <button id="save-profile-button" class="primary-button">Save Protocol</button>
+            </div>
+        </div>
+    </div>
+
     <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
             <!-- Close Icon -->
@@ -105,14 +140,19 @@
         <h2 id="settings-title">Preferences</h2>
         <fieldset>
             <legend>Technique</legend>
-            <select id="regiment-select" name="breathing-regiment">
-                <option value="coherence">Heart Coherence (Balance)</option>
-                <option value="box-breathing">Box Breathing (Focus)</option>
-                <option value="4-7-8">4-7-8 (Sleep)</option>
-                <option value="physiological-sigh">Physiological Sigh (Panic)</option>
-                <option value="mission-reset">Mission Reset (Sequence)</option>
-                <option value="custom">Custom Rhythm</option>
-            </select>
+            <div class="regiment-select-container">
+                <select id="regiment-select" name="breathing-regiment">
+                    <option value="coherence">Heart Coherence (Balance)</option>
+                    <option value="box-breathing">Box Breathing (Focus)</option>
+                    <option value="4-7-8">4-7-8 (Sleep)</option>
+                    <option value="physiological-sigh">Physiological Sigh (Panic)</option>
+                    <option value="mission-reset">Mission Reset (Sequence)</option>
+                    <option value="custom">Custom Rhythm</option>
+                </select>
+                <button id="create-profile-button" class="icon-button small" aria-label="Create new mission profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </button>
+            </div>
             <div id="custom-pace-inputs" class="hidden">
               <label for="custom-inhale">Inhale:</label>
               <input type="number" id="custom-inhale" min="1" max="60" value="4">

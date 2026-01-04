@@ -3,6 +3,7 @@
  */
 class RegimentManager {
     constructor() {
+        this.storageKey = 'breath_custom_profiles';
         this.regiments = {
             'box-breathing': {
                 id: 'box-breathing',
@@ -58,7 +59,71 @@ class RegimentManager {
                 audio: { baseFreq: 200, binauralBeat: 8 }
             }
         };
+
+        this.loadCustomProfiles();
         this.currentRegimentId = 'coherence'; // Default
+    }
+
+    /**
+     * Loads custom profiles from local storage and adds them to the regiments list.
+     */
+    loadCustomProfiles() {
+        const stored = localStorage.getItem(this.storageKey);
+        if (stored) {
+            try {
+                const profiles = JSON.parse(stored);
+                profiles.forEach(profile => {
+                    this.regiments[profile.id] = profile;
+                });
+            } catch (e) {
+                console.error("Failed to load custom profiles", e);
+            }
+        }
+    }
+
+    /**
+     * Saves a new custom profile (Mission Profile).
+     * @param {string} name - The name of the profile.
+     * @param {Array} sequence - The sequence of steps.
+     * @returns {string} The new profile ID.
+     */
+    createProfile(name, sequence) {
+        const id = 'profile-' + Date.now();
+        const profile = {
+            id: id,
+            name: name,
+            description: 'Custom Operational Protocol',
+            isSequence: true,
+            sequence: sequence, // [{ id: 'regiment_id', durationMinutes: 5 }]
+            benefits: ['Custom Protocol', 'Operational Specific'],
+            audio: { baseFreq: 200, binauralBeat: 8 }, // Default
+            isCustom: true
+        };
+
+        this.regiments[id] = profile;
+        this.saveProfilesToStorage();
+        return id;
+    }
+
+    /**
+     * Deletes a custom profile.
+     * @param {string} id - The ID of the profile to delete.
+     */
+    deleteProfile(id) {
+        if (this.regiments[id] && this.regiments[id].isCustom) {
+            delete this.regiments[id];
+            this.saveProfilesToStorage();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Persists all custom profiles to localStorage.
+     */
+    saveProfilesToStorage() {
+        const customProfiles = Object.values(this.regiments).filter(r => r.isCustom);
+        localStorage.setItem(this.storageKey, JSON.stringify(customProfiles));
     }
 
     /**

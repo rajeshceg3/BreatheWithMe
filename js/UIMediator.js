@@ -29,6 +29,18 @@ class UIMediator {
         this.topBar = document.getElementById('top-bar');
         this.bottomBar = document.getElementById('bottom-bar');
 
+        // Mission Profile Editor Elements
+        this.profileEditorModal = document.getElementById('profile-editor-modal');
+        this.createProfileButton = document.getElementById('create-profile-button');
+        this.cancelProfileButton = document.getElementById('cancel-profile-button');
+        this.saveProfileButton = document.getElementById('save-profile-button');
+        this.addStageButton = document.getElementById('add-stage-button');
+        this.profileNameInput = document.getElementById('profile-name');
+        this.stageRegimentSelect = document.getElementById('stage-regiment-select');
+        this.stageDurationInput = document.getElementById('stage-duration');
+        this.profileStagesList = document.getElementById('profile-stages-list');
+        this.regimentSelect = document.getElementById('regiment-select'); // Main select
+
         // Initialize Stress Slider Listener
         if (this.stressSlider && this.stressValueDisplay) {
             this.stressSlider.addEventListener('input', (e) => {
@@ -108,6 +120,19 @@ class UIMediator {
                 });
             } else {
                 this.stressModal.classList.remove('visible');
+            }
+        }
+    }
+
+    toggleProfileEditor(visible) {
+        if (this.profileEditorModal) {
+            this.profileEditorModal.classList.toggle('hidden', !visible);
+            if (visible) {
+                requestAnimationFrame(() => {
+                    this.profileEditorModal.classList.add('visible');
+                });
+            } else {
+                this.profileEditorModal.classList.remove('visible');
             }
         }
     }
