@@ -12,6 +12,10 @@ class ParticleManager {
         this.theme = 'light';
         this.mouse = { x: null, y: null, radius: 150 }; // Larger mouse radius for gentle influence
 
+        // Dynamic colors for breathing phases
+        this.phaseColorOverlay = null; // rgba string
+        this.phaseColorStrength = 0; // 0 to 1
+
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         window.addEventListener('mousemove', (event) => {
@@ -57,6 +61,25 @@ class ParticleManager {
         } else {
              // Day theme: Warm, soft sun motes
              return `rgba(255, ${230 + Math.random() * 25}, ${200 + Math.random() * 55}, ${Math.random() * 0.3 + 0.1})`;
+        }
+    }
+
+    /**
+     * Updates the particle system state based on the breathing phase.
+     * @param {string} phase - 'inhale', 'exhale', 'hold1', 'hold2', 'idle'
+     */
+    setPhase(phase) {
+        if (phase === 'inhale') {
+            this.state = 'gathering';
+            this.phaseColorOverlay = 'rgba(255, 220, 180, 0.5)'; // Warm Gold
+            this.phaseColorStrength = 0.3;
+        } else if (phase === 'exhale') {
+            this.state = 'dispersing';
+            this.phaseColorOverlay = 'rgba(180, 220, 255, 0.5)'; // Cool Blue
+            this.phaseColorStrength = 0.3;
+        } else {
+            this.state = 'idle';
+            this.phaseColorStrength = 0;
         }
     }
 
@@ -192,11 +215,36 @@ class ParticleManager {
         // p.color is "rgba(r, g, b, a)"
         // I want to use p.opacity for the alpha.
         const rgb = p.color.substring(p.color.indexOf('(') + 1, p.color.lastIndexOf(','));
-        this.ctx.fillStyle = `rgba(${rgb}, ${p.opacity})`;
 
+        // Base color
+        let fillStyle = `rgba(${rgb}, ${p.opacity})`;
+
+        // Apply Phase Overlay if active
+        if (this.phaseColorStrength > 0 && this.phaseColorOverlay) {
+             // We can't easily mix colors in canvas 2d without heavy calc or multiple draws.
+             // Strategy: Draw the particle with base color, then draw a slightly larger/same size circle on top with overlay color and low alpha.
+             // Better Strategy for performance: Just tint the shadow or use the overlay as the primary color if strength is high.
+             // Let's bias the color.
+             // Since we are parsing strings, let's just draw the overlay on top for the "glow" effect.
+        }
+
+        this.ctx.fillStyle = fillStyle;
+
+        // Draw base
         this.ctx.shadowBlur = 10;
         this.ctx.shadowColor = `rgba(${rgb}, 0.5)`;
         this.ctx.fill();
+
+        // Draw Overlay Tint
+        if (this.phaseColorStrength > 0 && this.phaseColorOverlay) {
+            // phaseColorOverlay is rgba(r,g,b, 0.5)
+            // We want to apply it with strength.
+            // Let's just fill again with the overlay color modulated by strength * opacity
+            const overlayRgb = this.phaseColorOverlay.substring(this.phaseColorOverlay.indexOf('(') + 1, this.phaseColorOverlay.lastIndexOf(','));
+            this.ctx.fillStyle = `rgba(${overlayRgb}, ${this.phaseColorStrength * p.opacity})`;
+            this.ctx.fill();
+        }
+
         this.ctx.shadowBlur = 0; // Reset
     }
 

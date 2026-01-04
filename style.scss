@@ -484,7 +484,7 @@ input[type=range]::-webkit-slider-runnable-track {
     }
 
     .chart-dot {
-        fill: var(--primary-color);
+        fill: var(--text-primary); /* Use text primary as base */
         transition: r 0.3s ease;
         cursor: pointer;
 
