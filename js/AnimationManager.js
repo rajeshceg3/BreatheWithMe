@@ -1,4 +1,4 @@
-class AnimationManager {
+export default class AnimationManager {
     constructor(breathingCircle) {
         this.breathingCircle = breathingCircle;
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

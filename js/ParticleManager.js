@@ -1,4 +1,4 @@
-class ParticleManager {
+export default class ParticleManager {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) {
@@ -11,6 +11,7 @@ class ParticleManager {
         this.state = 'idle'; // 'idle', 'gathering', 'dispersing'
         this.theme = 'light';
         this.mouse = { x: null, y: null, radius: 200 }; // Larger mouse radius for gentle influence
+        this.phase = 'idle';
 
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -215,5 +216,16 @@ class ParticleManager {
 
     setState(newState) {
         this.state = newState;
+    }
+
+    setPhase(phase) {
+        this.phase = phase;
+        if (phase === 'inhale') {
+             this.setState('gathering');
+        } else if (phase === 'exhale') {
+             this.setState('dispersing');
+        } else {
+             this.setState('idle');
+        }
     }
 }

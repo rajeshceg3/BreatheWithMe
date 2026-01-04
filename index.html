@@ -8,8 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Use style.scss directly for Vite to process -->
+    <link rel="stylesheet" href="style.scss">
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#fdeadd">
+    <meta name="description" content="Tactical breathing exercises for stress relief and focus.">
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -19,7 +22,7 @@
 
     <div class="app-container">
         <header id="top-bar">
-             <button id="theme-toggle-button" class="icon-button" aria-label="Toggle theme">
+            <button id="theme-toggle-button" class="icon-button" aria-label="Toggle theme">
                 <!-- Moon Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 11.807A9.002 9.002 0 0 1 10.049 2a9.942 9.942 0 0 0-8.3 9.951A10 10 0 0 0 12 22a9.94 9.94 0 0 0 9.951-8.3A9.002 9.002 0 0 1 12 11.807z"/></svg>
             </button>
@@ -131,18 +134,15 @@
                     <p id="stat-stress-delta">0</p>
                 </div>
             </div>
+            <!-- Trend Chart Container -->
+            <div id="trend-chart-container" class="chart-container"></div>
+
             <h3>Recent Logs</h3>
             <ul id="history-list"></ul>
         </div>
     </div>
 
-    <script src="js/AudioManager.js"></script>
-    <script src="js/ThemeManager.js"></script>
-    <script src="js/ParticleManager.js"></script>
-    <script src="js/UIMediator.js"></script>
-    <script src="js/AnimationManager.js"></script>
-    <script src="js/RegimentManager.js"></script>
-    <script src="js/AnalyticsManager.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Main JS (Vite Module) -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
