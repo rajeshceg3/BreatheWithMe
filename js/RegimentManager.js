@@ -1,4 +1,4 @@
-class RegimentManager {
+export default class RegimentManager {
     constructor() {
         this.regiments = {
             'box-breathing': {
@@ -43,6 +43,39 @@ class RegimentManager {
             }
         };
         this.currentRegimentId = 'coherence'; // Default
+
+        // Restore custom profile from memory if available
+        this.loadCustomProfile();
+    }
+
+    loadCustomProfile() {
+        const stored = localStorage.getItem('breath_custom_profiles');
+        if (stored) {
+             try {
+                 const profiles = JSON.parse(stored);
+                 // Assuming single custom profile for now or just taking the last active one logic
+                 // For now, let's see if we have saved custom values in individual keys as per app.js
+                 // Actually app.js saves to 'customInhale', etc.
+                 // We should respect that legacy or check if we want to use the new storage.
+                 // Let's stick to what app.js writes for now to be safe.
+             } catch (e) {
+                 console.warn("Failed to parse custom profiles", e);
+             }
+        }
+
+        // Check for individual keys (legacy/current app.js behavior)
+        const inhale = parseInt(localStorage.getItem('customInhale'));
+        const exhale = parseInt(localStorage.getItem('customExhale'));
+        const hold = parseInt(localStorage.getItem('customHold'));
+
+        if (!isNaN(inhale) && !isNaN(exhale)) {
+            this.updateCustomRegiment({
+                inhale: inhale,
+                exhale: exhale,
+                hold1: isNaN(hold) ? 0 : hold,
+                hold2: isNaN(hold) ? 0 : hold
+            });
+        }
     }
 
     getRegiments() {

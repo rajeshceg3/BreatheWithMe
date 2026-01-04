@@ -1,4 +1,4 @@
-class AnalyticsManager {
+export default class AnalyticsManager {
     constructor() {
         this.storageKey = 'breath_analytics_data';
         this.data = this.loadData();

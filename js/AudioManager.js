@@ -1,4 +1,4 @@
-class AudioManager {
+export default class AudioManager {
     constructor() {
         this.soundEnabled = false;
         this.audioContext = null;
@@ -50,9 +50,8 @@ class AudioManager {
             this.rightOsc.start();
 
             this.updateFrequencies();
-
         } catch (e) {
-            console.error("Web Audio API not supported", e);
+            console.error('Web Audio API not supported', e);
             this.soundEnabled = false;
         }
     }
@@ -83,9 +82,9 @@ class AudioManager {
 
         if (!enabled && this.masterGain) {
             // Cut volume immediately if disabled
-             const now = this.audioContext.currentTime;
-             this.masterGain.gain.cancelScheduledValues(now);
-             this.masterGain.gain.setValueAtTime(0, now);
+            const now = this.audioContext.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(0, now);
         }
     }
 
