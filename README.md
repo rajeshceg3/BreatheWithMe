@@ -1,4 +1,4 @@
-# Breathe With Me
+# BreatheWithMe
 
 A production-ready breathing exercise web application designed to reduce stress and improve focus through guided breathing techniques.
 
@@ -11,6 +11,7 @@ A production-ready breathing exercise web application designed to reduce stress 
 -   **Trend Analysis:** Visual charts to monitor stress trends over time.
 -   **PWA Ready:** Installable on mobile and desktop devices.
 -   **Offline Capable:** Works without an internet connection after initial load.
+-   **Themes:** Includes "Ethereal Dawn" (Day) and "Midnight Aurora" (Night) pastel glassmorphism themes.
 
 ## Technology Stack
 
