@@ -4,7 +4,7 @@ const js = require("@eslint/js");
 module.exports = [
     js.configs.recommended,
     {
-        files: ["js/**/*.js"],
+        files: ["public/js/**/*.js"],
         languageOptions: {
             ecmaVersion: 2021,
             sourceType: "module",
@@ -18,7 +18,8 @@ module.exports = [
                 AnimationManager: "readonly",
                 RegimentManager: "readonly",
                 AnalyticsManager: "readonly",
-                SessionManager: "readonly"
+                SessionManager: "readonly",
+                Visualizer: "readonly"
             }
         },
         rules: {

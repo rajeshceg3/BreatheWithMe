@@ -38,8 +38,8 @@
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     --glass-blur: 16px;
 
-    --text-primary: #4a4e69;
-    --text-secondary: #8d99ae;
+    --text-primary: #2b2d42; /* Darker for better contrast against light bg */
+    --text-secondary: #5c677d; /* Darker secondary */
     --accent-color: #9a8c98;
 
     --bloom-color-core: rgba(255, 255, 255, 0.9);
@@ -405,11 +405,17 @@ select, input[type="number"] {
 }
 
 @keyframes breathe-core {
-    0% { transform: scale(0.5); opacity: 0.8; }
+    0% { transform: scale(0.5); opacity: 0.8; background-color: var(--bloom-color-core); }
     #{$inhale-end-percent} { transform: scale(var(--circle-scale-max)); opacity: 1; }
+    /* Hold 1 Pulse */
+    #{$hold1-mid-percent} { transform: scale(calc(var(--circle-scale-max) * 1.02)); opacity: 0.95; }
     #{$hold1-end-percent} { transform: scale(var(--circle-scale-max)); opacity: 1; }
+
     #{$exhale-end-percent} { transform: scale(0.5); opacity: 0.8; }
-    100% { transform: scale(0.5); opacity: 0.8; }
+
+    /* Hold 2 Pulse */
+    #{$hold2-mid-percent} { transform: scale(0.52); opacity: 0.85; }
+    100% { transform: scale(0.5); opacity: 0.8; background-color: var(--bloom-color-core); }
 }
 
 @keyframes breathe-aura {
