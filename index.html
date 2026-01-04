@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
     <title>Breathe With Me</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -134,6 +136,7 @@
     <script src="js/AnimationManager.js"></script>
     <script src="js/RegimentManager.js"></script>
     <script src="js/AnalyticsManager.js"></script>
+    <script src="js/SessionManager.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

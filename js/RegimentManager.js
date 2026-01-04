@@ -1,3 +1,6 @@
+/**
+ * Manages breathing patterns (regiments) and their configurations.
+ */
 class RegimentManager {
     constructor() {
         this.regiments = {
@@ -45,14 +48,28 @@ class RegimentManager {
         this.currentRegimentId = 'coherence'; // Default
     }
 
+    /**
+     * Returns an array of all available regiments.
+     * @returns {Array} List of regiment objects.
+     */
     getRegiments() {
         return Object.values(this.regiments);
     }
 
+    /**
+     * Retrieves a specific regiment by ID.
+     * @param {string} id - The ID of the regiment.
+     * @returns {Object|undefined} The regiment object.
+     */
     getRegiment(id) {
         return this.regiments[id];
     }
 
+    /**
+     * Sets the current active regiment.
+     * @param {string} id - The ID of the regiment to activate.
+     * @returns {Object|null} The activated regiment or null if not found.
+     */
     setRegiment(id) {
         if (this.regiments[id]) {
             this.currentRegimentId = id;
@@ -61,10 +78,18 @@ class RegimentManager {
         return null;
     }
 
+    /**
+     * Gets the currently active regiment.
+     * @returns {Object} The active regiment object.
+     */
     getCurrentRegiment() {
         return this.regiments[this.currentRegimentId];
     }
 
+    /**
+     * Updates the pattern for the custom regiment.
+     * @param {Object} pattern - The new breathing pattern.
+     */
     updateCustomRegiment(pattern) {
         this.regiments['custom'].pattern = pattern;
     }
