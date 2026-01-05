@@ -34,6 +34,18 @@ export default class UIMediator {
         this.topBar = document.getElementById('top-bar');
         this.bottomBar = document.getElementById('bottom-bar');
 
+        // Mission Profile Editor Elements (Merged)
+        this.profileEditorModal = document.getElementById('profile-editor-modal');
+        this.createProfileButton = document.getElementById('create-profile-button');
+        this.cancelProfileButton = document.getElementById('cancel-profile-button');
+        this.saveProfileButton = document.getElementById('save-profile-button');
+        this.addStageButton = document.getElementById('add-stage-button');
+        this.profileNameInput = document.getElementById('profile-name');
+        this.stageRegimentSelect = document.getElementById('stage-regiment-select');
+        this.stageDurationInput = document.getElementById('stage-duration');
+        this.profileStagesList = document.getElementById('profile-stages-list');
+        this.regimentSelect = document.getElementById('regiment-select'); // Main select
+
         // Initialize Stress Slider Listener
         if (this.stressSlider && this.stressValueDisplay) {
             this.stressSlider.addEventListener('input', (e) => {
@@ -131,7 +143,20 @@ export default class UIMediator {
         }
     }
 
-    updateAnalyticsUI(stats, history) {
+    toggleProfileEditor(visible) {
+        if (this.profileEditorModal) {
+            this.profileEditorModal.classList.toggle('hidden', !visible);
+            if (visible) {
+                requestAnimationFrame(() => {
+                    this.profileEditorModal.classList.add('visible');
+                });
+            } else {
+                this.profileEditorModal.classList.remove('visible');
+            }
+        }
+    }
+
+    updateAnalyticsUI(stats, history, trendData) {
         if (this.statTotalSessions) this.statTotalSessions.textContent = stats.totalSessions;
         if (this.statTotalMinutes) this.statTotalMinutes.textContent = stats.totalMinutes;
         if (this.statStressDelta) this.statStressDelta.textContent = stats.avgStressReduction; //  > 0 is good
@@ -152,15 +177,27 @@ export default class UIMediator {
 
         // Render Chart
         if (this.trendChartContainer && typeof Visualizer !== 'undefined') {
-            const chartData = history.map(s => {
-                let val = 0;
-                if (s.preStress !== null && s.postStress !== null) {
-                    val = s.preStress - s.postStress;
-                }
-                return { date: s.date, value: val };
-            }).reverse(); // Visualizer expects oldest to newest left to right
+            try {
+                // If trendData is passed (from AnalyticsManager.getTrendData), use it
+                // Otherwise fallback to basic history mapping (which Visualizer might handle better or worse)
+                let chartData = trendData;
 
-            this.trendChartContainer.innerHTML = Visualizer.generateTrendChart(chartData, this.trendChartContainer.offsetWidth || 300, 150);
+                if (!chartData) {
+                     chartData = history.map(s => {
+                        let val = 0;
+                        if (s.preStress !== null && s.postStress !== null) {
+                            val = s.preStress - s.postStress;
+                        }
+                        return { date: s.date, value: val };
+                    }).reverse(); // Visualizer expects oldest to newest left to right
+                }
+
+                // If Visualizer.generateTrendChart supports width/height args, pass them, otherwise just data
+                this.trendChartContainer.innerHTML = Visualizer.generateTrendChart(chartData, this.trendChartContainer.offsetWidth || 300, 150);
+            } catch (e) {
+                console.error("Chart generation failed:", e);
+                this.trendChartContainer.innerHTML = `<div class="error">Chart Error</div>`;
+            }
         }
     }
 

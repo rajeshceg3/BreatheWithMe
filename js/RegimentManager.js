@@ -1,5 +1,9 @@
+/**
+ * Manages breathing patterns (regiments) and their configurations.
+ */
 export default class RegimentManager {
     constructor() {
+        this.storageKey = 'breath_custom_profiles';
         this.regiments = {
             'box-breathing': {
                 id: 'box-breathing',
@@ -40,30 +44,47 @@ export default class RegimentManager {
                 pattern: { inhale: 4, hold1: 1, exhale: 6, hold2: 1 },
                 benefits: ['Personalized'],
                 audio: { baseFreq: 220, binauralBeat: 8 } // Low Alpha default
+            },
+            'mission-reset': {
+                id: 'mission-reset',
+                name: 'Mission Reset (Sequence)',
+                description: 'Tactical Decompression Protocol: Sigh -> Box -> Coherence.',
+                isSequence: true,
+                sequence: [
+                    { id: 'physiological-sigh', durationMinutes: 1 },
+                    { id: 'box-breathing', durationMinutes: 3 },
+                    { id: 'coherence', durationMinutes: 2 }
+                ],
+                benefits: ['Full Decompression', 'Focus Recovery'],
+                audio: { baseFreq: 200, binauralBeat: 8 }
             }
         };
+
+        this.loadCustomProfiles();
         this.currentRegimentId = 'coherence'; // Default
 
-        // Restore custom profile from memory if available
-        this.loadCustomProfile();
+        // Also load basic custom regiment config if available (legacy support)
+        this.loadCustomRegimentConfig();
     }
 
-    loadCustomProfile() {
-        const stored = localStorage.getItem('breath_custom_profiles');
+    /**
+     * Loads custom profiles from local storage and adds them to the regiments list.
+     */
+    loadCustomProfiles() {
+        const stored = localStorage.getItem(this.storageKey);
         if (stored) {
-             try {
-                 const profiles = JSON.parse(stored);
-                 // Assuming single custom profile for now or just taking the last active one logic
-                 // For now, let's see if we have saved custom values in individual keys as per app.js
-                 // Actually app.js saves to 'customInhale', etc.
-                 // We should respect that legacy or check if we want to use the new storage.
-                 // Let's stick to what app.js writes for now to be safe.
-             } catch (e) {
-                 console.warn("Failed to parse custom profiles", e);
-             }
+            try {
+                const profiles = JSON.parse(stored);
+                profiles.forEach(profile => {
+                    this.regiments[profile.id] = profile;
+                });
+            } catch (e) {
+                console.error("Failed to load custom profiles", e);
+            }
         }
+    }
 
-        // Check for individual keys (legacy/current app.js behavior)
+    loadCustomRegimentConfig() {
         const inhale = parseInt(localStorage.getItem('customInhale'));
         const exhale = parseInt(localStorage.getItem('customExhale'));
         const hold = parseInt(localStorage.getItem('customHold'));
@@ -78,14 +99,73 @@ export default class RegimentManager {
         }
     }
 
+    /**
+     * Saves a new custom profile (Mission Profile).
+     * @param {string} name - The name of the profile.
+     * @param {Array} sequence - The sequence of steps.
+     * @returns {string} The new profile ID.
+     */
+    createProfile(name, sequence) {
+        const id = 'profile-' + Date.now();
+        const profile = {
+            id: id,
+            name: name,
+            description: 'Custom Operational Protocol',
+            isSequence: true,
+            sequence: sequence, // [{ id: 'regiment_id', durationMinutes: 5 }]
+            benefits: ['Custom Protocol', 'Operational Specific'],
+            audio: { baseFreq: 200, binauralBeat: 8 }, // Default
+            isCustom: true
+        };
+
+        this.regiments[id] = profile;
+        this.saveProfilesToStorage();
+        return id;
+    }
+
+    /**
+     * Deletes a custom profile.
+     * @param {string} id - The ID of the profile to delete.
+     */
+    deleteProfile(id) {
+        if (this.regiments[id] && this.regiments[id].isCustom) {
+            delete this.regiments[id];
+            this.saveProfilesToStorage();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Persists all custom profiles to localStorage.
+     */
+    saveProfilesToStorage() {
+        const customProfiles = Object.values(this.regiments).filter(r => r.isCustom);
+        localStorage.setItem(this.storageKey, JSON.stringify(customProfiles));
+    }
+
+    /**
+     * Returns an array of all available regiments.
+     * @returns {Array} List of regiment objects.
+     */
     getRegiments() {
         return Object.values(this.regiments);
     }
 
+    /**
+     * Retrieves a specific regiment by ID.
+     * @param {string} id - The ID of the regiment.
+     * @returns {Object|undefined} The regiment object.
+     */
     getRegiment(id) {
         return this.regiments[id];
     }
 
+    /**
+     * Sets the current active regiment.
+     * @param {string} id - The ID of the regiment to activate.
+     * @returns {Object|null} The activated regiment or null if not found.
+     */
     setRegiment(id) {
         if (this.regiments[id]) {
             this.currentRegimentId = id;
@@ -94,10 +174,18 @@ export default class RegimentManager {
         return null;
     }
 
+    /**
+     * Gets the currently active regiment.
+     * @returns {Object} The active regiment object.
+     */
     getCurrentRegiment() {
         return this.regiments[this.currentRegimentId];
     }
 
+    /**
+     * Updates the pattern for the custom regiment.
+     * @param {Object} pattern - The new breathing pattern.
+     */
     updateCustomRegiment(pattern) {
         this.regiments['custom'].pattern = pattern;
     }

@@ -67,4 +67,37 @@ describe('AnalyticsManager', () => {
         const newManager = new AnalyticsManager();
         expect(newManager.getStats().totalSessions).toBe(1);
     });
+
+    it('should retrieve trend data', () => {
+        const session1 = {
+            date: '2023-01-01T10:00:00.000Z',
+            duration: 60000,
+            regimentId: 'box',
+            preStress: 8,
+            postStress: 5 // delta 3
+        };
+        const session2 = {
+            date: '2023-01-02T10:00:00.000Z',
+            duration: 60000,
+            regimentId: 'box',
+            preStress: 6,
+            postStress: 2 // delta 4
+        };
+        const sessionNoStress = {
+             date: '2023-01-03T10:00:00.000Z',
+             duration: 60000,
+             regimentId: 'box',
+             preStress: null,
+             postStress: null
+        };
+
+        manager.logSession(session1);
+        manager.logSession(session2);
+        manager.logSession(sessionNoStress);
+
+        const trend = manager.getTrendData();
+        expect(trend.length).toBe(2); // Should filter out the one without stress data
+        expect(trend[0].value).toBe(3);
+        expect(trend[1].value).toBe(4);
+    });
 });

@@ -18,8 +18,9 @@ A production-ready breathing exercise web application designed to reduce stress 
 -   **Frontend:** Vanilla JavaScript (ES6+), SASS
 -   **Architecture:** Component-based with Manager pattern (SessionManager, RegimentManager, etc.)
 -   **Styling:** SCSS with responsive design and glassmorphism aesthetic
--   **Testing:** Jest (Unit Tests), Playwright (E2E Verification)
+-   **Testing:** Vitest (Unit Tests), Playwright (E2E Verification)
 -   **Linting:** ESLint, Prettier
+-   **Bundler:** Vite
 
 ## Setup & Installation
 
@@ -34,16 +35,17 @@ A production-ready breathing exercise web application designed to reduce stress 
     npm install
     ```
 
-3.  **Build Styles:**
+3.  **Run Development Server:**
+    ```bash
+    npm run dev
+    ```
+    Open `http://localhost:5173` (or the URL provided) in your browser.
+
+4.  **Build for Production:**
     ```bash
     npm run build
     ```
-
-4.  **Run Development Server:**
-    ```bash
-    npm start
-    ```
-    Open `http://127.0.0.1:8080` in your browser.
+    The output will be in the `dist/` directory.
 
 ## Testing
 
@@ -51,13 +53,6 @@ Run unit tests:
 ```bash
 npm test
 ```
-
-## Production Deployment
-
-This application is a static site. You can deploy it to any static host (Netlify, Vercel, GitHub Pages).
-
-1.  Run `npm run build` to ensure the latest CSS is generated.
-2.  Deploy the root directory (ensure `index.html`, `style.css`, `js/`, `manifest.json`, and `sw.js` are included).
 
 ## License
 

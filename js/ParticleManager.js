@@ -13,6 +13,10 @@ export default class ParticleManager {
         this.mouse = { x: null, y: null, radius: 200 }; // Larger mouse radius for gentle influence
         this.phase = 'idle';
 
+        // Dynamic colors for breathing phases
+        this.phaseColorOverlay = null; // rgba string
+        this.phaseColorStrength = 0; // 0 to 1
+
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         window.addEventListener('mousemove', (event) => {
@@ -58,7 +62,7 @@ export default class ParticleManager {
 
     updateThemeColors() {
         this.particles.forEach(p => {
-             p.targetColor = this.getParticleColorRGB();
+             p.targetRGB = this.getParticleColorRGB();
         });
     }
 
@@ -72,6 +76,26 @@ export default class ParticleManager {
         const color2 = c2 || { r: 200, g: 200, b: 200 };
 
         return Math.random() > 0.5 ? color1 : color2;
+    }
+
+    /**
+     * Updates the particle system state based on the breathing phase.
+     * @param {string} phase - 'inhale', 'exhale', 'hold1', 'hold2', 'idle'
+     */
+    setPhase(phase) {
+        this.phase = phase;
+        if (phase === 'inhale') {
+            this.state = 'gathering';
+            this.phaseColorOverlay = 'rgba(255, 220, 180, 0.5)'; // Warm Gold
+            this.phaseColorStrength = 0.3;
+        } else if (phase === 'exhale') {
+            this.state = 'dispersing';
+            this.phaseColorOverlay = 'rgba(180, 220, 255, 0.5)'; // Cool Blue
+            this.phaseColorStrength = 0.3;
+        } else {
+            this.state = 'idle';
+            this.phaseColorStrength = 0;
+        }
     }
 
     createParticle() {
@@ -201,31 +225,37 @@ export default class ParticleManager {
     }
 
     drawParticle(p) {
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        // Base Color from theme
+        let fillStyle = `rgba(${p.rgb.r}, ${p.rgb.g}, ${p.rgb.b}, ${p.opacity})`;
 
-        this.ctx.fillStyle = `rgba(${p.rgb.r}, ${p.rgb.g}, ${p.rgb.b}, ${p.opacity})`;
+        this.ctx.fillStyle = fillStyle;
 
         // Subtle glow
         this.ctx.shadowBlur = 8;
         this.ctx.shadowColor = `rgba(${p.rgb.r}, ${p.rgb.g}, ${p.rgb.b}, ${p.opacity * 0.8})`;
 
+        // Overlay Color for Phase Indication
+        if (this.phaseColorStrength > 0 && this.phaseColorOverlay) {
+             // Just fill on top with low opacity
+             // Extract RGB from overlay string (simple hack)
+             // Expected "rgba(r, g, b, a)"
+             this.ctx.fillStyle = this.phaseColorOverlay.replace(/[\d\.]+\)$/g, `${this.phaseColorStrength * p.opacity})`);
+             this.ctx.fill();
+             // Revert to base fill for main drawing if we want mixing, but simple overlay works
+             this.ctx.fillStyle = fillStyle;
+        }
+
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         this.ctx.fill();
+
+        // Optional: Draw overlay again if needed, but the fill above handles it if we did it right.
+        // Actually, let's keep it simple: Base color first.
+
         this.ctx.shadowBlur = 0;
     }
 
     setState(newState) {
         this.state = newState;
-    }
-
-    setPhase(phase) {
-        this.phase = phase;
-        if (phase === 'inhale') {
-             this.setState('gathering');
-        } else if (phase === 'exhale') {
-             this.setState('dispersing');
-        } else {
-             this.setState('idle');
-        }
     }
 }
