@@ -597,10 +597,17 @@ select, input[type="number"], input[type="text"] {
     background: transparent;
     color: var(--text-secondary);
     margin-top: 10px;
+    border: 1px solid transparent;
 
     &:hover {
         color: var(--text-primary);
         background: rgba(255,255,255,0.1);
+        border-color: var(--text-primary);
+    }
+
+    &.small {
+        padding: 8px 16px;
+        font-size: 0.9rem;
     }
 }
 
@@ -745,4 +752,115 @@ input[type=range]::-webkit-slider-runnable-track {
         font-size: 0.9rem;
         padding: 2rem 0;
     }
+}
+
+// ==========================================================================
+// 7. MISSION PROFILE EDITOR (Merged)
+// ==========================================================================
+
+.profile-editor-content {
+    max-width: 500px;
+    gap: 25px;
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input {
+            font-size: 1.1rem;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+
+            &:focus {
+                background: rgba(255,255,255,0.1);
+            }
+        }
+    }
+
+    .stages-container {
+        h3 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        ul {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.05);
+            border-radius: var(--border-radius-sm);
+            padding: 5px;
+
+            li {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 15px;
+                margin-bottom: 5px;
+                background: rgba(255,255,255,0.1);
+                border-radius: var(--border-radius-sm);
+                transition: background 0.2s;
+
+                &:last-child { margin-bottom: 0; }
+                &:hover { background: rgba(255,255,255,0.2); }
+
+                span {
+                    font-size: 0.95rem;
+                }
+            }
+        }
+    }
+
+    .add-stage-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        select { flex: 2; }
+
+        .duration-input {
+            flex: 1;
+            position: relative;
+
+            input { padding-right: 35px; }
+            span {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+                pointer-events: none;
+            }
+        }
+
+        button {
+            white-space: nowrap;
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 10px;
+    }
+}
+
+.regiment-select-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
 }

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
     <title>Breathe With Me</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +14,7 @@
     <link rel="icon" href="logo.svg" type="image/svg+xml">
     <meta name="theme-color" content="#fdeadd">
     <meta name="description" content="Tactical breathing exercises for stress relief and focus.">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -53,59 +55,15 @@
         </footer>
     </div> <!-- Close app-container -->
 
-    <!-- Settings Panel -->
-    <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
-            <!-- Close Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-        <h2 id="settings-title">Preferences</h2>
-        <fieldset>
-            <legend>Technique</legend>
-            <select id="regiment-select" name="breathing-regiment">
-                <option value="coherence">Heart Coherence (Balance)</option>
-                <option value="box-breathing">Box Breathing (Focus)</option>
-                <option value="4-7-8">4-7-8 (Sleep)</option>
-                <option value="physiological-sigh">Physiological Sigh (Panic)</option>
-                <option value="custom">Custom Rhythm</option>
-            </select>
-            <div id="custom-pace-inputs" class="hidden input-group vertical">
-              <div class="input-group">
-                  <div class="input-wrapper">
-                      <label for="custom-inhale">Inhale (s)</label>
-                      <input type="number" id="custom-inhale" min="1" max="60" value="4">
-                  </div>
-                  <div class="input-wrapper">
-                      <label for="custom-hold">Hold (s)</label>
-                      <input type="number" id="custom-hold" min="0" max="60" value="1">
-                  </div>
-              </div>
-              <div class="input-wrapper">
-                  <label for="custom-exhale">Exhale (s)</label>
-                  <input type="number" id="custom-exhale" min="1" max="60" value="6">
-              </div>
-            </div>
-        </fieldset>
-        <fieldset>
-            <legend>Duration</legend>
-            <select id="session-duration" name="session-duration">
-                <option value="3">3 Minutes</option>
-                <option value="5" selected>5 Minutes</option>
-                <option value="10">10 Minutes</option>
-                <option value="15">15 Minutes</option>
-            </select>
-        </fieldset>
-    </div>
-
     <!-- Stress Input Modal -->
     <div id="stress-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="stress-title">
         <div class="modal-content">
             <h2 id="stress-title">Check-in</h2>
             <p id="stress-prompt">How are you feeling right now?</p>
             <div class="slider-container">
-                <span>Calm</span>
+                <span>Calm (1)</span>
                 <input type="range" id="stress-slider" min="1" max="10" value="5">
-                <span>Stressed</span>
+                <span>Stressed (10)</span>
             </div>
             <p class="stress-value-display">Level: <span id="stress-value">5</span></p>
             <button id="submit-stress-button" class="primary-button">Continue</button>
@@ -140,6 +98,91 @@
             <h3>Recent Logs</h3>
             <ul id="history-list"></ul>
         </div>
+    </div>
+
+    <!-- Mission Profile Editor Modal (From PR) -->
+    <div id="profile-editor-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="profile-editor-title">
+        <div class="modal-content profile-editor-content">
+            <h2 id="profile-editor-title">New Mission Profile</h2>
+
+            <div class="input-group">
+                <label for="profile-name">Profile Name</label>
+                <input type="text" id="profile-name" placeholder="e.g., Morning Assault">
+            </div>
+
+            <div class="stages-container">
+                <h3>Mission Phases</h3>
+                <ul id="profile-stages-list">
+                    <!-- Dynamic list items -->
+                </ul>
+            </div>
+
+            <div class="add-stage-form">
+                <select id="stage-regiment-select">
+                    <!-- Populated by JS -->
+                </select>
+                <div class="duration-input">
+                    <input type="number" id="stage-duration" min="1" max="60" value="2">
+                    <span>min</span>
+                </div>
+                <button id="add-stage-button" class="secondary-button small">Add Phase</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="cancel-profile-button" class="secondary-button">Cancel</button>
+                <button id="save-profile-button" class="primary-button">Save Protocol</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (Merged) -->
+    <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
+            <!-- Close Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <h2 id="settings-title">Preferences</h2>
+        <fieldset>
+            <legend>Technique</legend>
+            <div class="regiment-select-container">
+                <select id="regiment-select" name="breathing-regiment">
+                    <option value="coherence">Heart Coherence (Balance)</option>
+                    <option value="box-breathing">Box Breathing (Focus)</option>
+                    <option value="4-7-8">4-7-8 (Sleep)</option>
+                    <option value="physiological-sigh">Physiological Sigh (Panic)</option>
+                    <option value="mission-reset">Mission Reset (Sequence)</option>
+                    <option value="custom">Custom Rhythm</option>
+                </select>
+                <button id="create-profile-button" class="icon-button small" aria-label="Create new mission profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </button>
+            </div>
+            <div id="custom-pace-inputs" class="hidden input-group vertical">
+              <div class="input-group">
+                  <div class="input-wrapper">
+                      <label for="custom-inhale">Inhale (s)</label>
+                      <input type="number" id="custom-inhale" min="1" max="60" value="4">
+                  </div>
+                  <div class="input-wrapper">
+                      <label for="custom-hold">Hold (s)</label>
+                      <input type="number" id="custom-hold" min="0" max="60" value="1">
+                  </div>
+              </div>
+              <div class="input-wrapper">
+                  <label for="custom-exhale">Exhale (s)</label>
+                  <input type="number" id="custom-exhale" min="1" max="60" value="6">
+              </div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Duration</legend>
+            <select id="session-duration" name="session-duration">
+                <option value="3">3 Minutes</option>
+                <option value="5" selected>5 Minutes</option>
+                <option value="10">10 Minutes</option>
+                <option value="15">15 Minutes</option>
+            </select>
+        </fieldset>
     </div>
 
     <!-- Main JS (Vite Module) -->

@@ -4,7 +4,7 @@ const js = require("@eslint/js");
 module.exports = [
     js.configs.recommended,
     {
-        files: ["public/js/**/*.js"],
+        files: ["js/**/*.js"],
         languageOptions: {
             ecmaVersion: 2021,
             sourceType: "module",
