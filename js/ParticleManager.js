@@ -10,7 +10,7 @@ export default class ParticleManager {
         this.animationFrameId = null;
         this.state = 'idle'; // 'idle', 'gathering', 'dispersing'
         this.theme = 'light';
-        this.mouse = { x: null, y: null, radius: 200 }; // Larger mouse radius for gentle influence
+        this.mouse = { x: null, y: null, radius: 250 }; // Increased interaction radius
         this.phase = 'idle';
 
         // Dynamic colors for breathing phases
@@ -72,8 +72,8 @@ export default class ParticleManager {
         const c2 = this.getCSSColor('--particle-color-2');
 
         // Fallback if CSS vars fail (shouldn't happen if sass compiles right)
-        const color1 = c1 || { r: 255, g: 255, b: 255 };
-        const color2 = c2 || { r: 200, g: 200, b: 200 };
+        const color1 = c1 || { r: 128, g: 90, b: 213 }; // Default Purple
+        const color2 = c2 || { r: 49, g: 151, b: 149 }; // Default Teal
 
         return Math.random() > 0.5 ? color1 : color2;
     }
@@ -84,14 +84,23 @@ export default class ParticleManager {
      */
     setPhase(phase) {
         this.phase = phase;
+        // Inhale: Warm/Core color (Purple/Gold hint)
+        // Exhale: Cool/Outer color (Teal/Blue hint)
+        // We will stick to the theme particle colors but increase intensity/overlay
+
         if (phase === 'inhale') {
             this.state = 'gathering';
-            this.phaseColorOverlay = 'rgba(255, 220, 180, 0.5)'; // Warm Gold
-            this.phaseColorStrength = 0.3;
+            // Use CSS var for dynamic overlay logic if we wanted, but simple tinting is fine
+            // Serenity Inhale: Soft warm tint
+            // Midnight Inhale: Lighter tint
+            const isDark = this.theme === 'dark';
+            this.phaseColorOverlay = isDark ? 'rgba(200, 230, 255, 0.4)' : 'rgba(255, 240, 200, 0.4)';
+            this.phaseColorStrength = 0.4;
         } else if (phase === 'exhale') {
             this.state = 'dispersing';
-            this.phaseColorOverlay = 'rgba(180, 220, 255, 0.5)'; // Cool Blue
-            this.phaseColorStrength = 0.3;
+             const isDark = this.theme === 'dark';
+            this.phaseColorOverlay = isDark ? 'rgba(100, 180, 255, 0.4)' : 'rgba(200, 250, 255, 0.4)';
+            this.phaseColorStrength = 0.4;
         } else {
             this.state = 'idle';
             this.phaseColorStrength = 0;
@@ -101,10 +110,10 @@ export default class ParticleManager {
     createParticle() {
         const x = Math.random() * this.canvas.width;
         const y = Math.random() * this.canvas.height;
-        const radius = Math.random() * 2.5 + 0.5; // Slightly larger, more varied
+        const radius = Math.random() * 3 + 1; // Varied sizes for depth
         const velocity = {
-            x: (Math.random() - 0.5) * 0.2,
-            y: (Math.random() - 0.5) * 0.2
+            x: (Math.random() - 0.5) * 0.3,
+            y: (Math.random() - 0.5) * 0.3
         };
 
         const colorRGB = this.getParticleColorRGB();
@@ -118,13 +127,13 @@ export default class ParticleManager {
             wanderAngle: Math.random() * 2 * Math.PI,
             rgb: colorRGB,
             targetRGB: colorRGB,
-            opacity: Math.random() * 0.5 + 0.1,
-            opacitySpeed: (Math.random() * 0.005) + 0.001
+            opacity: Math.random() * 0.6 + 0.1,
+            opacitySpeed: (Math.random() * 0.008) + 0.002
         };
         this.particles.push(particle);
     }
 
-    init(count = 100) { // Reduced count for elegance, less noise
+    init(count = 120) { // Slight increase for fullness
         this.particles = [];
         for (let i = 0; i < count; i++) {
             this.createParticle();
@@ -145,15 +154,18 @@ export default class ParticleManager {
     }
 
     updateParticle(p) {
-        // Opacity Twinkle (Slower, breathing)
+        // Opacity Twinkle (Organic)
         p.opacity += p.opacitySpeed;
-        if (p.opacity > 0.6 || p.opacity < 0.1) {
+        if (p.opacity > 0.7 || p.opacity < 0.15) {
             p.opacitySpeed *= -1;
         }
 
-        // Color transition (if theme changed)
-        // Simple lerp (could be smoother but fine for color swap)
-        p.rgb = p.targetRGB;
+        // Smooth Color Transition
+        // We move p.rgb towards p.targetRGB slowly
+        const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+        p.rgb.r = lerp(p.rgb.r, p.targetRGB.r, 0.05);
+        p.rgb.g = lerp(p.rgb.g, p.targetRGB.g, 0.05);
+        p.rgb.b = lerp(p.rgb.b, p.targetRGB.b, 0.05);
 
         // Mouse interaction (Gentle push/attract)
         if (this.mouse.x !== null && this.mouse.y !== null) {
@@ -165,11 +177,11 @@ export default class ParticleManager {
                 const forceDirectionX = dxMouse / distMouse;
                 const forceDirectionY = dyMouse / distMouse;
                 const force = (this.mouse.radius - distMouse) / this.mouse.radius;
-                const maxForce = 0.8;
+                const maxForce = 0.6; // Gentler force
 
-                // Repel
-                p.velocity.x += forceDirectionX * force * maxForce * 0.05;
-                p.velocity.y += forceDirectionY * force * maxForce * 0.05;
+                // Repel slightly
+                p.velocity.x += forceDirectionX * force * maxForce * 0.08;
+                p.velocity.y += forceDirectionY * force * maxForce * 0.08;
             }
         }
 
@@ -182,13 +194,13 @@ export default class ParticleManager {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             const angle = Math.atan2(dy, dx);
-            const orbitSpeed = 0.03;
+            const orbitSpeed = 0.02; // Slower, more hypnotic
 
             // Spiral in
             p.velocity.x += Math.cos(angle + Math.PI/2) * orbitSpeed;
             p.velocity.y += Math.sin(angle + Math.PI/2) * orbitSpeed;
-            p.velocity.x += (dx / dist) * 0.08;
-            p.velocity.y += (dy / dist) * 0.08;
+            p.velocity.x += (dx / dist) * 0.06;
+            p.velocity.y += (dy / dist) * 0.06;
 
         } else if (this.state === 'dispersing') {
             const dx = p.x - centerX;
@@ -196,15 +208,15 @@ export default class ParticleManager {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             // Explode out gently
-            if (dist > 1) { // Avoid divide by zero
-                p.velocity.x += (dx / dist) * 0.15;
-                p.velocity.y += (dy / dist) * 0.15;
+            if (dist > 1) {
+                p.velocity.x += (dx / dist) * 0.12;
+                p.velocity.y += (dy / dist) * 0.12;
             }
 
         } else { // idle
             // Organic Wander
-            p.wanderAngle += (Math.random() - 0.5) * 0.1; // Smoother turns
-            const wanderForce = 0.002;
+            p.wanderAngle += (Math.random() - 0.5) * 0.08;
+            const wanderForce = 0.003;
             p.velocity.x += Math.cos(p.wanderAngle) * wanderForce;
             p.velocity.y += Math.sin(p.wanderAngle) * wanderForce;
 
@@ -218,39 +230,32 @@ export default class ParticleManager {
         p.y += p.velocity.y;
 
         // Wrap around screen
-        if (p.x < -20) p.x = this.canvas.width + 20;
-        if (p.x > this.canvas.width + 20) p.x = -20;
-        if (p.y < -20) p.y = this.canvas.height + 20;
-        if (p.y > this.canvas.height + 20) p.y = -20;
+        if (p.x < -30) p.x = this.canvas.width + 30;
+        if (p.x > this.canvas.width + 30) p.x = -30;
+        if (p.y < -30) p.y = this.canvas.height + 30;
+        if (p.y > this.canvas.height + 30) p.y = -30;
     }
 
     drawParticle(p) {
         // Base Color from theme
-        let fillStyle = `rgba(${p.rgb.r}, ${p.rgb.g}, ${p.rgb.b}, ${p.opacity})`;
+        let fillStyle = `rgba(${Math.round(p.rgb.r)}, ${Math.round(p.rgb.g)}, ${Math.round(p.rgb.b)}, ${p.opacity})`;
 
         this.ctx.fillStyle = fillStyle;
 
-        // Subtle glow
-        this.ctx.shadowBlur = 8;
-        this.ctx.shadowColor = `rgba(${p.rgb.r}, ${p.rgb.g}, ${p.rgb.b}, ${p.opacity * 0.8})`;
+        // Subtle glow - performance heavy, so keep radius low
+        this.ctx.shadowBlur = 6;
+        this.ctx.shadowColor = `rgba(${Math.round(p.rgb.r)}, ${Math.round(p.rgb.g)}, ${Math.round(p.rgb.b)}, ${p.opacity * 0.6})`;
 
         // Overlay Color for Phase Indication
         if (this.phaseColorStrength > 0 && this.phaseColorOverlay) {
-             // Just fill on top with low opacity
-             // Extract RGB from overlay string (simple hack)
-             // Expected "rgba(r, g, b, a)"
              this.ctx.fillStyle = this.phaseColorOverlay.replace(/[\d\.]+\)$/g, `${this.phaseColorStrength * p.opacity})`);
              this.ctx.fill();
-             // Revert to base fill for main drawing if we want mixing, but simple overlay works
              this.ctx.fillStyle = fillStyle;
         }
 
         this.ctx.beginPath();
         this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         this.ctx.fill();
-
-        // Optional: Draw overlay again if needed, but the fill above handles it if we did it right.
-        // Actually, let's keep it simple: Base color first.
 
         this.ctx.shadowBlur = 0;
     }
