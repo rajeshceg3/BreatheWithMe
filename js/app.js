@@ -123,12 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function welcomeMessage() {
         uiMediator.updateInstructionText('Welcome.');
         setTimeout(() => {
-            uiMediator.instructionText.style.opacity = '0';
-            setTimeout(() => {
-                const regiment = regimentManager.getCurrentRegiment();
-                uiMediator.updateInstructionText(`Tap Begin to start. (${regiment.name})`);
-                uiMediator.instructionText.style.opacity = '1';
-            }, 1000);
+            if (uiMediator.instructionText) {
+                uiMediator.instructionText.style.opacity = '0';
+                setTimeout(() => {
+                    const regiment = regimentManager.getCurrentRegiment();
+                    uiMediator.updateInstructionText(`Tap Begin to start. (${regiment.name})`);
+                    uiMediator.instructionText.style.opacity = '1';
+                }, 1000);
+            }
         }, 2000);
     }
 
