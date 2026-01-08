@@ -2,17 +2,20 @@ export default class Visualizer {
     static generateTrendChart(data, width = 300, height = 150) {
         // data format: [{ date: '...', value: 2 }, ...] where value is stress reduction
         if (!data || data.length < 2) {
-            return `<div class="empty-chart">Start a session to track your journey.</div>`;
+            return `<div class="empty-chart" style="color: var(--text-secondary); text-align: center; font-size: 0.9rem;">Complete sessions to see your stress reduction trend.</div>`;
         }
 
-        const padding = 25; // More breathing room
+        const padding = 20;
         const chartWidth = width - (padding * 2);
         const chartHeight = height - (padding * 2);
 
         // Find min/max for scaling
         const values = data.map(d => d.value);
-        const minVal = Math.min(...values, 0);
-        const maxVal = Math.max(...values, 1);
+        let minVal = Math.min(...values, 0);
+        let maxVal = Math.max(...values, 1);
+
+        // Add some headroom
+        maxVal = maxVal + (maxVal * 0.1);
 
         const range = maxVal - minVal;
 
@@ -20,63 +23,59 @@ export default class Visualizer {
         const getX = (index) => padding + (index / (data.length - 1)) * chartWidth;
         const getY = (value) => height - padding - ((value - minVal) / (range || 1)) * chartHeight;
 
-        // Build points for the curved line (Catmull-Rom or Cubic Bezier ideally, but simple L is fine for now, let's try smooth curve)
-        // Simple smoothing: Control points at midpoints
+        // Generate Path Data with Catmull-Rom Spline or similar smoothing
+        // Since we are raw SVG, we can use simple cubic bezier for smoothing
+        // or just straight lines if complex math is too much for a snippet.
+        // Let's do a simple smooth curve approximation.
+
         let d = `M ${getX(0)} ${getY(data[0].value)}`;
 
         for (let i = 0; i < data.length - 1; i++) {
             const x1 = getX(i);
             const y1 = getY(data[i].value);
             const x2 = getX(i + 1);
-            const y2 = getY(data[i + 1].value);
+            const y2 = getY(data[i+1].value);
 
-            // Midpoint control for simple curve
-            const midX = (x1 + x2) / 2;
-            d += ` Q ${midX} ${y1}, ${midX} ${(y1 + y2) / 2} T ${x2} ${y2}`;
+            // Control points (simple smoothing)
+            const c1x = x1 + (x2 - x1) * 0.5;
+            const c1y = y1;
+            const c2x = x1 + (x2 - x1) * 0.5;
+            const c2y = y2;
+
+            d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`;
         }
 
-        // Fallback if curve logic is buggy (it's tricky without a library), let's stick to straight lines but add a subtle area fill?
-        // Actually, let's do straight lines but with a nice gradient stroke.
-        let pathD = `M ${getX(0)} ${getY(data[0].value)}`;
-        data.forEach((point, i) => {
-            if (i === 0) return;
-            pathD += ` L ${getX(i)} ${getY(point.value)}`;
+        // Close the path for area fill
+        const areaD = `${d} L ${getX(data.length - 1)} ${height - padding} L ${getX(0)} ${height - padding} Z`;
+
+        // Points
+        let points = '';
+        data.forEach((d, i) => {
+            const x = getX(i);
+            const y = getY(d.value);
+            points += `<circle cx="${x}" cy="${y}" r="4" fill="var(--bloom-core)" stroke="var(--text-accent)" stroke-width="2" />`;
         });
-
-        // Build area path (for gradient fill under the line)
-        const areaPathD = `${pathD} L ${getX(data.length - 1)} ${height - padding} L ${padding} ${height - padding} Z`;
-
-        // Build points for dots
-        let dots = '';
-        data.forEach((point, i) => {
-            dots += `<circle cx="${getX(i)}" cy="${getY(point.value)}" r="4" class="chart-dot" data-value="${point.value}" fill="var(--text-primary)" />`;
-        });
-
-        // Zero line
-        let zeroLine = '';
-        if (minVal < 0 && maxVal > 0) {
-            const zeroY = getY(0);
-            zeroLine = `<line x1="${padding}" y1="${zeroY}" x2="${width - padding}" y2="${zeroY}" class="chart-zero-line" />`;
-        }
 
         return `
-            <svg viewBox="0 0 ${width} ${height}" class="trend-chart" aria-label="Stress reduction trend chart" style="overflow: visible;">
+            <svg viewBox="0 0 ${width} ${height}" class="trend-chart" style="overflow: visible; width: 100%; height: 100%;">
                 <defs>
-                    <linearGradient id="line-gradient" x1="0" x2="1" y1="0" y2="0">
-                        <stop offset="0%" stop-color="var(--particle-color-1)" stop-opacity="0.8"/>
-                        <stop offset="100%" stop-color="var(--particle-color-2)" stop-opacity="0.8"/>
-                    </linearGradient>
-                     <linearGradient id="area-gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="var(--particle-color-1)" stop-opacity="0.2"/>
-                        <stop offset="100%" stop-color="var(--particle-color-2)" stop-opacity="0.0"/>
+                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="var(--text-accent)" stop-opacity="0.5"/>
+                        <stop offset="100%" stop-color="var(--text-accent)" stop-opacity="0.0"/>
                     </linearGradient>
                 </defs>
-                ${zeroLine}
-                <!-- Area Fill -->
-                <path d="${areaPathD}" fill="url(#area-gradient)" stroke="none" />
+
+                <!-- Zero Line -->
+                <line x1="${padding}" y1="${getY(0)}" x2="${width-padding}" y2="${getY(0)}" stroke="var(--text-secondary)" stroke-opacity="0.3" stroke-dasharray="4 4" />
+
+                <!-- Area -->
+                <path d="${areaD}" fill="url(#chartGradient)" />
+
                 <!-- Line -->
-                <path d="${pathD}" fill="none" stroke="url(#line-gradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                ${dots}
+                <path d="${d}" fill="none" stroke="var(--text-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.2))" />
+
+                <!-- Points -->
+                ${points}
             </svg>
         `;
     }
