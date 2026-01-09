@@ -29,71 +29,74 @@
     --border-radius-pill: 100px;
 }
 
-/* -- Themes: Day (Ethereal Morning) -- */
+/* -- Themes: Day (Serenity Pastels) -- */
 :root {
-    /* Backgrounds: Soft, dreamy gradients */
-    --bg-color-base: #FDFBF7;
-    --bg-gradient-1: #E0F7FA; /* Cyan Tint */
-    --bg-gradient-2: #F3E5F5; /* Pale Lilac */
-    --bg-gradient-3: #FFF3E0; /* Soft Orange */
+    /* Backgrounds: Ethereal & Airy */
+    --bg-color-base: #F8F9FA;
+    --bg-gradient-1: #DAEAEF; /* Soft Mist */
+    --bg-gradient-2: #F0E6EF; /* Pale Rose */
+    --bg-gradient-3: #EBF5EE; /* Sage Hint */
 
-    /* Glassmorphism - Frosted & Premium */
-    --glass-bg: rgba(255, 255, 255, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-border-highlight: rgba(255, 255, 255, 0.9);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-    --glass-blur: 24px;
-    --glass-saturation: 180%;
+    /* Glassmorphism - Crystalline */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-border-highlight: rgba(255, 255, 255, 0.95);
+    --glass-shadow: 0 8px 32px 0 rgba(100, 116, 139, 0.08);
+    --glass-blur: 40px; /* Extreme Blur for premium feel */
+    --glass-saturation: 140%;
 
-    /* Typography */
-    --text-primary: #2D3748; /* Slate 800 */
-    --text-secondary: #718096; /* Slate 500 */
-    --text-accent: #6B46C1; /* Soft Purple */
+    /* Typography - Luxurious & Sharp */
+    --text-primary: #334155; /* Slate 700 - Softer than black */
+    --text-secondary: #94A3B8; /* Slate 400 */
+    --text-accent: #818CF8; /* Soft Indigo */
     --text-inverse: #FFFFFF;
 
-    /* Breathing Circle Bloom */
+    /* Breathing Circle Bloom - Pastel Glows */
     --bloom-core: #FFFFFF;
-    --bloom-inner: rgba(160, 174, 255, 0.4);
-    --bloom-outer: rgba(100, 200, 200, 0.25);
-    --bloom-shadow: rgba(160, 174, 255, 0.4);
+    --bloom-inner: rgba(165, 243, 252, 0.5); /* Cyan 200 */
+    --bloom-outer: rgba(221, 214, 254, 0.3); /* Violet 200 */
+    --bloom-shadow: rgba(165, 243, 252, 0.6);
 
-    /* Particles */
-    --particle-color-1: 107, 70, 193; /* Purple */
-    --particle-color-2: 49, 151, 149; /* Teal */
+    /* Particles - Subtle Drift */
+    --particle-color-1: 129, 140, 248; /* Soft Indigo */
+    --particle-color-2: 45, 212, 191; /* Soft Teal */
 
-    --focus-ring: rgba(107, 70, 193, 0.5);
-    --noise-opacity: 0.03;
+    --focus-ring: rgba(129, 140, 248, 0.5);
+    --noise-opacity: 0.025; /* Even finer grain */
 }
 
-/* -- Themes: Night (Midnight Nebula) -- */
+/* -- Themes: Night (Midnight Zen) -- */
 :root[data-theme='dark'] {
     /* Deep & Calming */
-    --bg-color-base: #0F172A;
-    --bg-gradient-1: #1E1B4B; /* Deep Indigo */
-    --bg-gradient-2: #312E81; /* Indigo */
-    --bg-gradient-3: #111827; /* Gray 900 */
+    --bg-color-base: #0B0F19; /* Almost Black Blue */
+    --bg-gradient-1: #172033;
+    --bg-gradient-2: #252238; /* Deep Mauve hint */
+    --bg-gradient-3: #0F172A;
 
-    --glass-bg: rgba(15, 23, 42, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-highlight: rgba(255, 255, 255, 0.15);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-    --glass-blur: 24px;
+    /* Glassmorphism - Obsidian */
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-highlight: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+    --glass-blur: 32px;
 
-    --text-primary: #E2E8F0; /* Slate 200 */
-    --text-secondary: #94A3B8; /* Slate 400 */
-    --text-accent: #A78BFA; /* Soft Purple */
-    --text-inverse: #0F172A;
+    /* Typography */
+    --text-primary: #F1F5F9; /* Slate 100 */
+    --text-secondary: #64748B; /* Slate 500 */
+    --text-accent: #C4B5FD; /* Violet 300 */
+    --text-inverse: #0B0F19;
 
+    /* Breathing Circle - Nebula */
     --bloom-core: #FFFFFF;
-    --bloom-inner: rgba(167, 139, 250, 0.3);
-    --bloom-outer: rgba(56, 189, 248, 0.2);
-    --bloom-shadow: rgba(167, 139, 250, 0.3);
+    --bloom-inner: rgba(139, 92, 246, 0.4);
+    --bloom-outer: rgba(56, 189, 248, 0.25);
+    --bloom-shadow: rgba(139, 92, 246, 0.5);
 
     --particle-color-1: 167, 139, 250;
     --particle-color-2: 56, 189, 248;
 
-    --focus-ring: rgba(167, 139, 250, 0.5);
-    --noise-opacity: 0.05;
+    --focus-ring: rgba(196, 181, 253, 0.5);
+    --noise-opacity: 0.04;
 }
 
 // SASS Logic for Animation Keyframes
@@ -191,20 +194,21 @@ h1, h2, h3, h4, button {
     border: 1px solid var(--glass-border);
     border-top: 1px solid var(--glass-border-highlight);
     border-left: 1px solid var(--glass-border-highlight);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-shadow),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1); /* Inner rim for depth */
 }
 
 // Header
 #top-bar {
     @include glass-panel;
-    height: 60px;
+    height: 72px; /* Slightly taller */
     width: min(90%, 500px);
-    margin: 24px auto 0;
+    margin: 32px auto 0;
     border-radius: var(--border-radius-pill);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 24px;
     transition: all var(--transition-duration) var(--transition-ease);
     z-index: 50;
 }
@@ -212,28 +216,36 @@ h1, h2, h3, h4, button {
 // Icon Buttons
 .icon-button {
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    padding: 10px;
+    padding: 12px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     color: var(--text-secondary);
 
     svg {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         fill: currentColor;
         transition: fill 0.3s ease;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
 
     &:hover {
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
         color: var(--text-primary);
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        backdrop-filter: blur(4px);
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.95);
     }
 
     &:focus-visible {
@@ -242,45 +254,72 @@ h1, h2, h3, h4, button {
     }
 }
 
-// Main Action Button (Begin)
+// Main Action Button (Begin) - Glass Bead Style
 #session-button {
-    @include glass-panel;
-    font-size: 1.1rem;
-    font-weight: 700;
+    // Override glass-panel for a specific button look
+    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+
+    font-size: 1rem;
+    font-weight: 800;
     color: var(--text-primary);
-    padding: 20px 50px;
+    padding: 24px 64px;
     border-radius: var(--border-radius-pill);
     cursor: pointer;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     overflow: hidden;
+    box-shadow:
+        0 10px 20px rgba(0,0,0,0.05),
+        0 6px 6px rgba(0,0,0,0.05),
+        inset 0 -4px 12px rgba(0,0,0,0.05),
+        inset 0 4px 12px rgba(255,255,255,0.9); // Inner Highlight
+
+    // Idle Pulse
+    animation: button-idle-pulse 4s ease-in-out infinite;
 
     // Shine effect
     &::after {
         content: '';
         position: absolute;
-        top: 0; left: -100%;
+        top: 0; left: -150%;
         width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255,255,255,0.8) 50%,
+            transparent 100%
+        );
+        transform: skewX(-20deg);
         transition: 0.5s;
     }
 
     &:hover {
-        background: var(--text-primary);
-        color: var(--bg-color-base);
-        border-color: transparent;
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
+        transform: translateY(-4px) scale(1.03);
+        box-shadow:
+            0 20px 40px -10px rgba(100, 116, 139, 0.2),
+            inset 0 0 0 2px rgba(255,255,255,0.6);
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.6));
+        color: var(--text-accent);
+        letter-spacing: 0.3em; // Subtle expansion
 
-        &::after { left: 100%; }
+        &::after { left: 150%; transition: 0.7s ease-in-out; }
+        animation-play-state: paused;
     }
 
     &:active {
         transform: translateY(-1px) scale(0.98);
-        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
+}
+
+@keyframes button-idle-pulse {
+    0%, 100% { box-shadow: 0 10px 20px rgba(0,0,0,0.05), inset 0 4px 12px rgba(255,255,255,0.9); }
+    50% { box-shadow: 0 10px 30px rgba(var(--particle-color-1), 0.15), inset 0 4px 12px rgba(255,255,255,0.9); border-color: var(--text-accent); }
 }
 
 // Footer
@@ -649,55 +688,67 @@ input[type="text"] { background-image: none; }
     100% { transform: rotate(360deg) scale(1); }
 }
 
-// Breathing Keyframes - Refined with easing
+// Breathing Keyframes - Refined with elegant easing
 @keyframes breathe-core {
-    0% { transform: scale(0.3); opacity: 0.8; box-shadow: 0 0 30px var(--bloom-shadow); }
+    0% {
+        transform: scale(0.3);
+        opacity: 0.9;
+        box-shadow: 0 0 40px var(--bloom-shadow), inset 0 0 40px var(--bloom-core);
+    }
     #{$inhale-end-percent} {
         transform: scale(var(--circle-scale-max));
         opacity: 1;
-        box-shadow: 0 0 80px var(--bloom-shadow);
+        box-shadow: 0 0 100px var(--bloom-shadow), inset 0 0 20px var(--bloom-core);
     }
     #{$hold1-end-percent} {
         transform: scale(var(--circle-scale-max));
         opacity: 1;
-        box-shadow: 0 0 80px var(--bloom-shadow);
+        box-shadow: 0 0 100px var(--bloom-shadow), inset 0 0 20px var(--bloom-core);
     }
     #{$exhale-end-percent} {
         transform: scale(0.3);
-        opacity: 0.8;
-        box-shadow: 0 0 30px var(--bloom-shadow);
+        opacity: 0.9;
+        box-shadow: 0 0 40px var(--bloom-shadow), inset 0 0 40px var(--bloom-core);
     }
-    100% { transform: scale(0.3); opacity: 0.8; box-shadow: 0 0 30px var(--bloom-shadow); }
+    100% {
+        transform: scale(0.3);
+        opacity: 0.9;
+        box-shadow: 0 0 40px var(--bloom-shadow), inset 0 0 40px var(--bloom-core);
+    }
 }
 
 @keyframes breathe-inner {
-    0% { transform: scale(0.5); opacity: 0.3; filter: blur(15px); }
+    0% { transform: scale(0.4); opacity: 0; filter: blur(20px); }
     #{$inhale-end-percent} {
-        transform: scale(calc(var(--circle-scale-max) * 1.1));
-        opacity: 0.6;
-        filter: blur(25px);
+        transform: scale(calc(var(--circle-scale-max) * 1.25));
+        opacity: 0.5;
+        filter: blur(40px);
     }
     #{$hold1-end-percent} {
-        transform: scale(calc(var(--circle-scale-max) * 1.1));
-        opacity: 0.6;
-        filter: blur(25px);
+        transform: scale(calc(var(--circle-scale-max) * 1.25));
+        opacity: 0.5;
+        filter: blur(40px);
     }
     #{$exhale-end-percent} {
-        transform: scale(0.5);
-        opacity: 0.3;
-        filter: blur(15px);
+        transform: scale(0.4);
+        opacity: 0;
+        filter: blur(20px);
     }
-    100% { transform: scale(0.5); opacity: 0.3; filter: blur(15px); }
+    100% { transform: scale(0.4); opacity: 0; filter: blur(20px); }
 }
 
 @keyframes breathe-aura {
-    0% { transform: scale(0.5); opacity: 0; }
+    0% { transform: scale(0.8); opacity: 0; border-width: 2px; }
     #{$inhale-end-percent} {
-        transform: scale(calc(var(--circle-scale-max) * 1.4));
-        opacity: 0.4;
+        transform: scale(calc(var(--circle-scale-max) * 1.6));
+        opacity: 0.3;
+        border-width: 1px;
     }
-    #{$hold1-end-percent} { opacity: 0; } // Fade out during hold
-    100% { opacity: 0; }
+    #{$hold1-end-percent} {
+        opacity: 0.1;
+        transform: scale(calc(var(--circle-scale-max) * 1.7));
+    }
+    100% { opacity: 0; transform: scale(calc(var(--circle-scale-max) * 1.8)); }
 }
 
 // Fade overlay for immersive transition
