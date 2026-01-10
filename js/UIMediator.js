@@ -1,4 +1,5 @@
 import Visualizer from './Visualizer.js';
+import MotionUtils from './MotionUtils.js';
 
 export default class UIMediator {
     constructor() {
@@ -52,6 +53,24 @@ export default class UIMediator {
                 this.stressValueDisplay.textContent = e.target.value;
             });
         }
+
+        // Initialize MotionUtils for advanced interactions
+        this.motionUtils = new MotionUtils();
+
+        // Add ripple effect to all interactive elements
+        this.initRippleEffects();
+    }
+
+    initRippleEffects() {
+        const interactiveElements = document.querySelectorAll('button, .stat-card, .modal-content');
+        interactiveElements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                // Only create ripple if not disabled
+                if (!el.disabled) {
+                    this.motionUtils.createRipple(e, el);
+                }
+            });
+        });
     }
 
     updateSessionButton(isPlaying) {
