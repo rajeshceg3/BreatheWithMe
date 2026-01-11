@@ -15,6 +15,7 @@ export default class MotionUtils {
         this.addMagneticEffect('.icon-button');
         this.addMagneticEffect('#session-button');
         this.addMagneticEffect('.primary-button');
+        this.addMagneticEffect('.secondary-button');
     }
 
     addMagneticEffect(selector) {
@@ -34,26 +35,42 @@ export default class MotionUtils {
         const x = e.clientX - centerX;
         const y = e.clientY - centerY;
 
-        // Strength of the magnetic pull (0.3 is subtle, 0.5 is strong)
-        const strength = 0.4;
+        // Strength of the magnetic pull
+        const strength = 0.35;
+
+        // Temporarily speed up transition for the magnetic effect to feel responsive
+        // We preserve other transitions but override transform transition
+        el.style.transition = 'transform 0.1s linear, box-shadow 0.3s ease';
 
         // Apply transform
-        el.style.transform = `translate(${x * strength}px, ${y * strength}px) scale(1.1)`;
+        el.style.transform = `translate(${x * strength}px, ${y * strength}px) scale(1.05)`;
 
         // Also move the child SVG or text slightly more for parallax if it exists
         const child = el.querySelector('svg') || el.querySelector('span');
         if (child) {
-            child.style.transform = `translate(${x * strength * 0.5}px, ${y * strength * 0.5}px)`;
+            child.style.transition = 'transform 0.1s linear';
+            child.style.transform = `translate(${x * strength * 0.4}px, ${y * strength * 0.4}px)`;
         }
     }
 
     handleMagneticLeave(e, el) {
+        // Restore transition for a smooth snap back
+        el.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease';
+
         // Snap back to center
         el.style.transform = '';
+
         const child = el.querySelector('svg') || el.querySelector('span');
         if (child) {
+            child.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
             child.style.transform = '';
         }
+
+        // Clean up inline styles after the snap back animation completes
+        setTimeout(() => {
+            el.style.transition = '';
+            if (child) child.style.transition = '';
+        }, 600);
     }
 
     // Ripple Effect
