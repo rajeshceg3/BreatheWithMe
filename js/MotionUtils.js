@@ -10,12 +10,12 @@ export default class MotionUtils {
     }
 
     init() {
-        // Initialize magnetic effect on all elements with 'data-magnetic' or class 'icon-button'
-        // We will target specific classes for now to be safe
+        // Initialize magnetic effect on all elements with 'data-magnetic' or specific classes
         this.addMagneticEffect('.icon-button');
         this.addMagneticEffect('#session-button');
         this.addMagneticEffect('.primary-button');
         this.addMagneticEffect('.secondary-button');
+        this.addMagneticEffect('.stat-card');
     }
 
     addMagneticEffect(selector) {
@@ -23,6 +23,8 @@ export default class MotionUtils {
         elements.forEach(el => {
             el.addEventListener('mousemove', (e) => this.handleMagneticMove(e, el));
             el.addEventListener('mouseleave', (e) => this.handleMagneticLeave(e, el));
+            // Add hint for browser optimization
+            el.style.willChange = 'transform';
         });
     }
 
@@ -36,33 +38,45 @@ export default class MotionUtils {
         const y = e.clientY - centerY;
 
         // Strength of the magnetic pull
-        const strength = 0.35;
+        const strength = 0.4;
+        const tiltStrength = 0.15;
 
         // Temporarily speed up transition for the magnetic effect to feel responsive
         // We preserve other transitions but override transform transition
         el.style.transition = 'transform 0.1s linear, box-shadow 0.3s ease';
 
-        // Apply transform
-        el.style.transform = `translate(${x * strength}px, ${y * strength}px) scale(1.05)`;
+        // 3D Tilt Calculation
+        // Rotate X is based on Y position (tilt up/down)
+        // Rotate Y is based on X position (tilt left/right)
+        const rotateX = -y * tiltStrength;
+        const rotateY = x * tiltStrength;
 
-        // Also move the child SVG or text slightly more for parallax if it exists
-        const child = el.querySelector('svg') || el.querySelector('span');
+        // Apply transform with Tilt and Scale
+        el.style.transform = `
+            translate(${x * strength}px, ${y * strength}px)
+            rotateX(${rotateX}deg)
+            rotateY(${rotateY}deg)
+            scale(1.05)
+        `;
+
+        // Parallax for child elements (Text/Icon)
+        const child = el.querySelector('svg') || el.querySelector('span') || el.querySelector('.icon');
         if (child) {
             child.style.transition = 'transform 0.1s linear';
-            child.style.transform = `translate(${x * strength * 0.4}px, ${y * strength * 0.4}px)`;
+            child.style.transform = `translate(${x * strength * 0.3}px, ${y * strength * 0.3}px)`;
         }
     }
 
     handleMagneticLeave(e, el) {
-        // Restore transition for a smooth snap back
-        el.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease';
+        // Restore transition for a smooth snap back with elastic bounce
+        el.style.transition = 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease';
 
         // Snap back to center
-        el.style.transform = '';
+        el.style.transform = 'translate(0, 0) rotateX(0) rotateY(0) scale(1)';
 
-        const child = el.querySelector('svg') || el.querySelector('span');
+        const child = el.querySelector('svg') || el.querySelector('span') || el.querySelector('.icon');
         if (child) {
-            child.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            child.style.transition = 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
             child.style.transform = '';
         }
 
@@ -70,7 +84,7 @@ export default class MotionUtils {
         setTimeout(() => {
             el.style.transition = '';
             if (child) child.style.transition = '';
-        }, 600);
+        }, 800);
     }
 
     // Ripple Effect
@@ -86,12 +100,17 @@ export default class MotionUtils {
         circle.style.top = `${e.clientY - rect.top - radius}px`;
         circle.classList.add('ripple');
 
-        const ripple = el.getElementsByClassName('ripple')[0];
-
-        if (ripple) {
-            ripple.remove();
+        // Check if existing ripple needs removal
+        const existingRipple = el.getElementsByClassName('ripple')[0];
+        if (existingRipple) {
+            existingRipple.remove();
         }
 
         el.appendChild(circle);
+
+        // Auto remove after animation
+        setTimeout(() => {
+            circle.remove();
+        }, 1000);
     }
 }
