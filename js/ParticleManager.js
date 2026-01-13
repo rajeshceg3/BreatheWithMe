@@ -29,7 +29,7 @@ export default class ParticleManager {
         this.animationFrameId = null;
         this.state = 'idle'; // 'idle', 'gathering', 'dispersing'
         this.theme = 'light';
-        this.mouse = { x: null, y: null, radius: 300 };
+        this.mouse = { x: null, y: null, radius: 350 }; // Increased radius
         this.phase = 'idle';
 
         this.time = 0; // Global time for noise
@@ -71,24 +71,29 @@ export default class ParticleManager {
     getCSSColor(variableName) {
         const val = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
         if (val) {
+             // Handle comma-separated RGB (old style) or just let it fail if it's hex
             const parts = val.split(',').map(n => parseInt(n.trim(), 10));
             if (parts.length === 3) {
                 return { r: parts[0], g: parts[1], b: parts[2] };
             }
         }
-        // Fallback for hex colors or other formats if needed, but we stick to RGB format in CSS var for now
-        // Or if it's a hex string (which it might be now with new CSS vars), we need to parse it.
-        // My new CSS vars are Hex codes (e.g. #FDFCF8).
-        // I need to update this function to handle Hex.
-
-        if (val && val.startsWith('#')) {
-             const r = parseInt(val.slice(1, 3), 16);
-             const g = parseInt(val.slice(3, 5), 16);
-             const b = parseInt(val.slice(5, 7), 16);
-             return { r, g, b };
-        }
-
         return null;
+    }
+
+    // Helper to hex to rgb
+    hexToRgb(hex) {
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 
     updateThemeColors() {
@@ -98,11 +103,30 @@ export default class ParticleManager {
     }
 
     getParticleColorRGB() {
-        const c1 = this.getCSSColor('--particle-color-1');
-        const c2 = this.getCSSColor('--particle-color-2');
+        // Try getting new CSS vars which might be hex now
+        let c1Str = getComputedStyle(document.documentElement).getPropertyValue('--particle-color-1').trim();
+        let c2Str = getComputedStyle(document.documentElement).getPropertyValue('--particle-color-2').trim();
 
-        const color1 = c1 || { r: 167, g: 139, b: 250 }; // Default to Violet
-        const color2 = c2 || { r: 52, g: 211, b: 153 }; // Default to Emerald
+        // If they are RGB lists (old way)
+        let c1 = null, c2 = null;
+
+        if (c1Str.includes(',')) {
+             const parts = c1Str.split(',').map(n => parseInt(n.trim(), 10));
+             c1 = { r: parts[0], g: parts[1], b: parts[2] };
+        } else {
+             c1 = this.hexToRgb(c1Str);
+        }
+
+        if (c2Str.includes(',')) {
+             const parts = c2Str.split(',').map(n => parseInt(n.trim(), 10));
+             c2 = { r: parts[0], g: parts[1], b: parts[2] };
+        } else {
+             c2 = this.hexToRgb(c2Str);
+        }
+
+        // Fallbacks
+        const color1 = c1 || { r: 196, g: 181, b: 253 }; // Violet 300
+        const color2 = c2 || { r: 110, g: 231, b: 183 }; // Emerald 300
 
         return Math.random() > 0.5 ? color1 : color2;
     }
@@ -112,18 +136,20 @@ export default class ParticleManager {
 
         const isDark = this.theme === 'dark';
 
-        // Colors updated to match new SASS variables
+        // Updated colors for Ethereal theme interaction
         if (phase === 'inhale') {
             this.state = 'gathering';
-            this.phaseColorOverlay = isDark ? 'rgba(56, 189, 248, 0.5)' : 'rgba(167, 139, 250, 0.4)'; // Sky/Violet
-            this.phaseColorStrength = 0.6;
+            // Inhale: Cool, Fresh (Blue/Teal)
+            this.phaseColorOverlay = isDark ? 'rgba(56, 189, 248, 0.4)' : 'rgba(125, 211, 252, 0.3)';
+            this.phaseColorStrength = 0.5;
         } else if (phase === 'exhale') {
             this.state = 'dispersing';
-            this.phaseColorOverlay = isDark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(52, 211, 153, 0.4)'; // Purple/Green
-            this.phaseColorStrength = 0.6;
+            // Exhale: Warm, Release (Purple/Rose)
+            this.phaseColorOverlay = isDark ? 'rgba(192, 132, 252, 0.4)' : 'rgba(244, 114, 182, 0.3)';
+            this.phaseColorStrength = 0.5;
         } else if (phase === 'hold') {
              this.state = 'floating';
-             this.phaseColorStrength = 0.8; // Intensify color on hold
+             this.phaseColorStrength = 0.7; // Glow intensifies
         } else {
             this.state = 'idle';
             this.phaseColorStrength = 0;
@@ -133,7 +159,7 @@ export default class ParticleManager {
     createParticle() {
         const x = Math.random() * this.canvas.width;
         const y = Math.random() * this.canvas.height;
-        const radius = Math.random() * 2.5 + 0.8; // Slightly larger for "Bokeh" feel
+        const radius = Math.random() * 3.0 + 1.0; // Larger for "Bokeh"
 
         const colorRGB = this.getParticleColorRGB();
 
@@ -143,16 +169,18 @@ export default class ParticleManager {
             radius,
             vx: 0,
             vy: 0,
-            rgb: { ...colorRGB }, // Clone to allow individual transition
+            rgb: { ...colorRGB },
             targetRGB: colorRGB,
-            opacity: Math.random() * 0.4 + 0.1,
+            opacity: Math.random() * 0.5 + 0.1,
             opacitySpeed: (Math.random() * 0.005) + 0.002,
-            life: Math.random() * 1000
+            life: Math.random() * 1000,
+            isSparkle: Math.random() > 0.95, // 5% chance to be a sparkle
+            sparklePhase: Math.random() * Math.PI
         };
         this.particles.push(particle);
     }
 
-    init(count = 250) { // Increased count for dense atmosphere
+    init(count = 300) { // Denser atmosphere
         this.particles = [];
         for (let i = 0; i < count; i++) {
             this.createParticle();
@@ -163,7 +191,6 @@ export default class ParticleManager {
     }
 
     animate() {
-        // Performance optimization: stop when page hidden
         if (document.hidden) {
              this.animationFrameId = requestAnimationFrame(() => this.animate());
              return;
@@ -172,7 +199,7 @@ export default class ParticleManager {
         this.animationFrameId = requestAnimationFrame(() => this.animate());
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.time += 0.002; // Slower, more hypnotic time scale
+        this.time += 0.0015; // Slow, hypnotic time
 
         this.particles.forEach(p => {
             this.updateParticle(p);
@@ -183,7 +210,7 @@ export default class ParticleManager {
     updateParticle(p) {
         // Opacity Breathing
         p.opacity += p.opacitySpeed;
-        if (p.opacity > 0.6 || p.opacity < 0.1) {
+        if (p.opacity > 0.7 || p.opacity < 0.1) {
             p.opacitySpeed *= -1;
         }
 
@@ -193,17 +220,21 @@ export default class ParticleManager {
         p.rgb.g = lerp(p.rgb.g, p.targetRGB.g, 0.02);
         p.rgb.b = lerp(p.rgb.b, p.targetRGB.b, 0.02);
 
-        // -- FLOW FIELD LOGIC (SUPREME) --
-        // A more organic flow field using multi-layered sine waves for "Liquid" feel
-        const scale = 0.0015;
-        // Layer 1: Base flow
-        let angle = (Math.cos(p.x * scale + this.time) + Math.sin(p.y * scale + this.time)) * Math.PI;
-        // Layer 2: Detail turbulence
-        angle += (Math.sin(p.x * 0.01 - this.time * 2) * 0.5);
+        // -- ETHEREAL FLOW LOGIC --
+        // Layered Sine waves for organic fluid motion
+        const scale = 0.0012; // Zoomed out for larger currents
 
-        // Base ambient motion
-        let forceX = Math.cos(angle) * 0.2;
-        let forceY = Math.sin(angle) * 0.2;
+        // Base Flow
+        let angle = (Math.cos(p.x * scale + this.time) + Math.sin(p.y * scale + this.time)) * Math.PI;
+
+        // Turbulence
+        angle += (Math.sin(p.x * 0.005 - this.time * 2) * 0.3);
+
+        let forceX = Math.cos(angle) * 0.15;
+        let forceY = Math.sin(angle) * 0.15;
+
+        // Gravity/Buoyancy
+        forceY -= 0.05; // Slight upward drift (Heat rising / Bubbles)
 
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
@@ -214,66 +245,80 @@ export default class ParticleManager {
         // -- STATE BEHAVIOR --
         if (this.state === 'gathering') {
             // Logarithmic Spiral In
-            const spiralAngle = Math.atan2(dy, dx) + 0.8; // Offset angle for spiral
-            forceX += Math.cos(spiralAngle) * 0.8;
-            forceY += Math.sin(spiralAngle) * 0.8;
-            forceX += (dx / dist) * 0.4; // Direct pull
+            const spiralAngle = Math.atan2(dy, dx) + 0.6; // Soft spiral
+            const pullStrength = (dist / (this.canvas.width/2)) * 0.5; // Stronger at edges
+            forceX += Math.cos(spiralAngle) * 0.6;
+            forceY += Math.sin(spiralAngle) * 0.6;
+            forceX += (dx / dist) * 0.2; // Direct centering
 
         } else if (this.state === 'dispersing') {
             // Radiant Out with Curl
              const pushX = p.x - centerX;
              const pushY = p.y - centerY;
-             const pushDist = Math.sqrt(pushX*pushX + pushY*pushY);
+             // const pushDist = Math.sqrt(pushX*pushX + pushY*pushY);
 
-            if (pushDist > 1) {
-                const repelAngle = Math.atan2(pushY, pushX) - 0.2;
-                forceX += Math.cos(repelAngle) * 0.9;
-                forceY += Math.sin(repelAngle) * 0.9;
-            }
+             const repelAngle = Math.atan2(pushY, pushX) - 0.3;
+             forceX += Math.cos(repelAngle) * 0.7;
+             forceY += Math.sin(repelAngle) * 0.7;
+
         } else if (this.state === 'floating') {
-            // Anti-gravity float with vertical drift
-            forceY -= 0.4;
-            forceX += (Math.random() - 0.5) * 0.3;
+            // Suspended animation
+            forceY -= 0.2;
+            forceX += (Math.random() - 0.5) * 0.1;
         }
 
-        // Mouse Interaction (Magnetic Repulsion)
+        // Mouse Interaction (Liquid Displacement)
         if (this.mouse.x !== null) {
             const mDx = p.x - this.mouse.x;
             const mDy = p.y - this.mouse.y;
             const mDist = Math.sqrt(mDx*mDx + mDy*mDy);
             if (mDist < this.mouse.radius) {
                 const f = (this.mouse.radius - mDist) / this.mouse.radius;
-                forceX += (mDx/mDist) * f * 3.0;
-                forceY += (mDy/mDist) * f * 3.0;
+                // Soft repulsion
+                forceX += (mDx/mDist) * f * 2.5;
+                forceY += (mDy/mDist) * f * 2.5;
             }
         }
 
-        // Apply Force to Velocity
+        // Apply Force
         p.vx += forceX * 0.03;
         p.vy += forceY * 0.03;
 
-        // Friction/Damping
-        p.vx *= 0.96;
-        p.vy *= 0.96;
+        // Damping (Water resistance)
+        p.vx *= 0.97;
+        p.vy *= 0.97;
 
         p.x += p.vx;
         p.y += p.vy;
 
-        // Wrap around with buffer
-        const buffer = 50;
+        // Wrap around
+        const buffer = 100;
         if (p.x < -buffer) p.x = this.canvas.width + buffer;
         if (p.x > this.canvas.width + buffer) p.x = -buffer;
         if (p.y < -buffer) p.y = this.canvas.height + buffer;
         if (p.y > this.canvas.height + buffer) p.y = -buffer;
+
+        // Sparkle Logic
+        if (p.isSparkle) {
+            p.sparklePhase += 0.1;
+        }
     }
 
     drawParticle(p) {
-        // Soft Glow Drawing
         const r = Math.round(p.rgb.r);
         const g = Math.round(p.rgb.g);
         const b = Math.round(p.rgb.b);
 
-        this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.opacity})`;
+        let opacity = p.opacity;
+
+        // Sparkle effect
+        if (p.isSparkle) {
+            opacity += Math.sin(p.sparklePhase) * 0.3;
+            if (opacity > 1) opacity = 1;
+            if (opacity < 0) opacity = 0;
+        }
+
+        this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 
         // Draw Core
         this.ctx.beginPath();
@@ -282,8 +327,12 @@ export default class ParticleManager {
 
         // Draw Bloom if Phase Active
         if (this.phaseColorStrength > 0 && this.phaseColorOverlay) {
-             const bloomSize = p.radius * 6; // Larger bloom
-             this.ctx.fillStyle = this.phaseColorOverlay.replace(/[\d\.]+\)$/g, `${this.phaseColorStrength * p.opacity * 0.25})`);
+             const bloomSize = p.radius * 8; // Deep atmosphere
+             // Parse overlay color to apply alpha
+             // Quick hack: replace alpha in rgba string
+             const alpha = this.phaseColorStrength * opacity * 0.2;
+             this.ctx.fillStyle = this.phaseColorOverlay.replace(/[\d\.]+\)$/g, `${alpha})`);
+
              this.ctx.beginPath();
              this.ctx.arc(p.x, p.y, bloomSize, 0, Math.PI * 2);
              this.ctx.fill();
