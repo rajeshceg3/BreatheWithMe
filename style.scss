@@ -2,7 +2,7 @@
 @use 'responsive';
 
 // ==========================================================================
-// 1. DESIGN SYSTEM & VARIABLES (SUPREME EDITION)
+// 1. DESIGN SYSTEM & VARIABLES (SUPREME EDITION - PEARLESCENT UPDATE)
 // ==========================================================================
 
 :root {
@@ -38,51 +38,52 @@
     --border-radius-pill: 999px;
 }
 
-/* -- Themes: Day (Serenity - Ethereal Pastels) -- */
+/* -- Themes: Day (Pearlescent - Ethereal Pastels) -- */
 :root {
     /* Backgrounds: Warm & Soft */
     --bg-color-base: #FDFCF8; /* Creamy White */
 
-    /* Gradient Palette - The "Dawn" */
-    --bg-gradient-1: #E0E7FF; /* Soft Indigo */
-    --bg-gradient-2: #FCE7F3; /* Soft Pink */
-    --bg-gradient-3: #D1FAE5; /* Mint Green */
-    --bg-gradient-4: #FFF7ED; /* Warm Peach */
+    /* Gradient Palette - The "Pearlescent" */
+    --bg-gradient-1: #F3E7E9; /* Soft Rose */
+    --bg-gradient-2: #E3EEFF; /* Pale Blue */
+    --bg-gradient-3: #E7F9F5; /* Aqua Mist */
+    --bg-gradient-4: #FFF1EB; /* Warm Blush */
 
-    /* Glassmorphism - Frosted Crystal */
-    --glass-bg: rgba(255, 255, 255, 0.45);
+    /* Glassmorphism - Frosted Crystal Prism */
+    --glass-bg: rgba(255, 255, 255, 0.55);
     --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-border-highlight: rgba(255, 255, 255, 0.9);
+    --glass-border-highlight: rgba(255, 255, 255, 0.95);
     --glass-shadow:
-        0 8px 32px -4px rgba(136, 153, 166, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-    --glass-blur: 40px;
-    --glass-saturation: 160%;
+        0 8px 32px -4px rgba(136, 153, 166, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    --glass-blur: 50px;
+    --glass-saturation: 180%;
 
     /* Typography */
     --text-primary: #475569; /* Slate 600 */
     --text-secondary: #94A3B8; /* Slate 400 */
-    --text-accent: #F472B6; /* Pink 400 */
+    --text-accent: #EC4899; /* Pink 500 (Sharper accent) */
     --text-inverse: #FFFFFF;
 
-    /* Breathing Circle Bloom */
+    /* Breathing Circle Bloom - Iridescent */
     --bloom-core: #FFFFFF;
-    --bloom-inner: rgba(167, 243, 208, 0.5); /* Green 200 */
-    --bloom-outer: rgba(253, 186, 116, 0.4); /* Orange 200 */
-    --bloom-shadow: rgba(196, 181, 253, 0.5); /* Violet 300 */
+    --bloom-inner: rgba(255, 200, 220, 0.5); /* Soft Rose */
+    --bloom-outer: rgba(180, 240, 255, 0.4); /* Soft Cyan */
+    --bloom-shadow: rgba(220, 200, 255, 0.5); /* Soft Lavender */
 
     /* Particles */
-    --particle-color-1: 167, 139, 250; /* Violet 400 */
-    --particle-color-2: 52, 211, 153; /* Emerald 400 */
+    --particle-color-1: 236, 72, 153; /* Pink 500 */
+    --particle-color-2: 45, 212, 191; /* Teal 400 */
 
-    --focus-ring: rgba(167, 139, 250, 0.5);
-    --noise-opacity: 0.035;
+    --focus-ring: rgba(236, 72, 153, 0.5);
+    --noise-opacity: 0.04;
 }
 
-/* -- Themes: Night (Dream - Deep Bioluminescence) -- */
+/* -- Themes: Night (Nebula - Deep Bioluminescence) -- */
 :root[data-theme='dark'] {
     /* Deep Space */
-    --bg-color-base: #0F172A; /* Slate 900 */
+    --bg-color-base: #020617; /* Slate 950 */
 
     /* Gradient Palette - The "Aurora" */
     --bg-gradient-1: #1E1B4B; /* Indigo 950 */
@@ -90,32 +91,34 @@
     --bg-gradient-3: #134E4A; /* Teal 900 */
     --bg-gradient-4: #4C1D95; /* Violet 900 */
 
-    /* Glassmorphism - Obsidian */
-    --glass-bg: rgba(15, 23, 42, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-border-highlight: rgba(255, 255, 255, 0.1);
+    /* Glassmorphism - Obsidian Prism */
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-highlight: rgba(255, 255, 255, 0.15);
     --glass-shadow:
-        0 10px 40px -10px rgba(0, 0, 0, 0.6),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-    --glass-blur: 50px;
+        0 15px 50px -10px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+    --glass-blur: 60px;
+    --glass-saturation: 120%;
 
     /* Typography */
     --text-primary: #F1F5F9; /* Slate 100 */
     --text-secondary: #64748B; /* Slate 500 */
     --text-accent: #38BDF8; /* Sky 400 */
-    --text-inverse: #0F172A;
+    --text-inverse: #020617;
 
     /* Breathing Circle - Nebula */
     --bloom-core: #FFFFFF;
-    --bloom-inner: rgba(56, 189, 248, 0.3); /* Sky */
-    --bloom-outer: rgba(168, 85, 247, 0.2); /* Purple */
-    --bloom-shadow: rgba(56, 189, 248, 0.4);
+    --bloom-inner: rgba(56, 189, 248, 0.35); /* Sky */
+    --bloom-outer: rgba(168, 85, 247, 0.25); /* Purple */
+    --bloom-shadow: rgba(56, 189, 248, 0.5);
 
     --particle-color-1: 56, 189, 248; /* Sky 400 */
     --particle-color-2: 168, 85, 247; /* Purple 500 */
 
     --focus-ring: rgba(56, 189, 248, 0.5);
-    --noise-opacity: 0.05;
+    --noise-opacity: 0.06;
 }
 
 // SASS Logic for Animation Keyframes (Percentages)
@@ -151,10 +154,11 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-size: var(--font-size-base);
     font-weight: 400;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em; /* Tighter for editorial feel */
     color: var(--text-primary);
     background-color: var(--bg-color-base);
     transition: background-color var(--transition-duration) var(--transition-ease), color var(--transition-duration);
+    text-rendering: optimizeLegibility;
 }
 
 // -- Cinematic Background -- //
@@ -165,14 +169,18 @@ body::before {
     top: -50%; left: -50%;
     width: 200%; height: 200%;
     background:
-        radial-gradient(circle at 0% 0%, var(--bg-gradient-1), transparent 60%),
-        radial-gradient(circle at 100% 0%, var(--bg-gradient-2), transparent 60%),
-        radial-gradient(circle at 100% 100%, var(--bg-gradient-3), transparent 60%),
-        radial-gradient(circle at 0% 100%, var(--bg-gradient-4), transparent 60%);
-    filter: blur(140px); /* Increased blur for smoother gradient */
-    opacity: 0.6;
+        conic-gradient(
+            from 0deg,
+            var(--bg-gradient-1),
+            var(--bg-gradient-2),
+            var(--bg-gradient-3),
+            var(--bg-gradient-4),
+            var(--bg-gradient-1)
+        );
+    filter: blur(80px); /* Slightly sharper for texture */
+    opacity: 0.7;
     z-index: -2;
-    animation: aurora-spin 90s linear infinite;
+    animation: aurora-spin 120s linear infinite;
 }
 
 // Layer 2: The Floating Orbs (Breathing)
@@ -182,11 +190,11 @@ body::before {
     top: 20%; left: 20%;
     width: 60vw; height: 60vw;
     background: radial-gradient(circle, var(--bg-gradient-2), transparent 70%);
-    filter: blur(100px);
-    opacity: 0.4;
+    filter: blur(120px);
+    opacity: 0.5;
     z-index: -1;
     border-radius: 50%;
-    animation: float-orb 30s var(--float-ease) infinite alternate;
+    animation: float-orb 40s var(--float-ease) infinite alternate;
     pointer-events: none;
 }
 
@@ -195,7 +203,7 @@ body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
     opacity: var(--noise-opacity);
     pointer-events: none;
     z-index: -1;
@@ -316,11 +324,11 @@ h1, h2, h3, h4, button {
 
 // Main Action Button (Begin) - The "Luminous Gem"
 #session-button {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.9);
 
     font-size: 1.15rem;
     font-weight: 800;
@@ -336,11 +344,11 @@ h1, h2, h3, h4, button {
 
     // Gem-like shadow
     box-shadow:
-        0 20px 40px -10px rgba(var(--particle-color-1), 0.2),
-        inset 0 0 30px rgba(255, 255, 255, 0.3);
+        0 20px 40px -10px rgba(var(--particle-color-1), 0.25),
+        inset 0 0 30px rgba(255, 255, 255, 0.4);
 
     // Pulse Animation when Idle
-    animation: gentle-pulse 5s infinite ease-in-out;
+    animation: gentle-pulse 6s infinite ease-in-out;
 
     // Sheen
     &::after {
@@ -351,7 +359,7 @@ h1, h2, h3, h4, button {
         background: linear-gradient(
             90deg,
             transparent,
-            rgba(255,255,255,0.6),
+            rgba(255,255,255,0.7),
             transparent
         );
         transform: skewX(-25deg);
@@ -363,10 +371,10 @@ h1, h2, h3, h4, button {
         transform: translateY(-6px) scale(1.03);
         border-color: var(--text-accent);
         color: var(--text-accent);
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
         box-shadow:
-            0 35px 70px -15px rgba(var(--particle-color-1), 0.35),
-            inset 0 0 30px rgba(255, 255, 255, 0.5);
+            0 35px 70px -15px rgba(var(--particle-color-1), 0.45),
+            inset 0 0 30px rgba(255, 255, 255, 0.6);
 
         &::after {
             left: 200%;
@@ -402,16 +410,21 @@ h1, h2, h3, h4, button {
     text-align: center;
     font-size: var(--font-size-lg);
     font-weight: 300;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     color: var(--text-primary);
     opacity: 0.9;
     transition: all 0.8s ease;
     mix-blend-mode: multiply; /* Better blend with bg */
     padding: 0 20px;
+    background: linear-gradient(180deg, var(--text-primary) 0%, rgba(var(--text-primary), 0.6) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
 
     body[data-theme='dark'] & {
         mix-blend-mode: normal;
         text-shadow: 0 0 25px rgba(255,255,255,0.15);
+        background: none;
+        color: var(--text-primary);
     }
 
     &.text-fade-out {
@@ -586,7 +599,7 @@ fieldset {
 
     &:hover {
         background: rgba(255,255,255,0.08);
-        border-color: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.25);
         transform: translateY(-2px);
     }
 
@@ -625,8 +638,8 @@ select, input:not([type=range]) {
     width: 100%;
     padding: 18px 28px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     font-family: 'Nunito', sans-serif;
     font-size: 1.05rem;
@@ -639,13 +652,13 @@ select, input:not([type=range]) {
     appearance: none;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.5);
         transform: translateY(-2px);
     }
 
     &:focus {
-        background: rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.22);
         border-color: var(--text-accent);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--text-accent) inset;
         transform: translateY(-4px);
@@ -741,7 +754,7 @@ body[data-theme='dark'] select {
 
 @keyframes gentle-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(var(--particle-color-1), 0); }
-    50% { box-shadow: 0 0 25px rgba(var(--particle-color-1), 0.4); }
+    50% { box-shadow: 0 0 35px rgba(var(--particle-color-1), 0.5); }
 }
 
 // Refined Breathing Animation (Sequence)
