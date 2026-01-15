@@ -302,6 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderProfileStages();
             });
         });
+
+        // Apply magnetic effect to new buttons
+        if (uiMediator.motionUtils) {
+            uiMediator.motionUtils.addMagneticEffect(deleteButtons);
+        }
     }
 
     // --- Breathing Regiment Logic ---

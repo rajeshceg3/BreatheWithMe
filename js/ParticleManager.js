@@ -23,6 +23,10 @@ export default class ParticleManager {
         this.phaseColorOverlay = null;
         this.phaseColorStrength = 0;
 
+        // Emotional Resonance Scalars
+        this.speedScalar = 0.5;
+        this.turbulenceScalar = 1.0;
+
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         window.addEventListener('mousemove', (event) => {
@@ -98,20 +102,32 @@ export default class ParticleManager {
 
         if (phase === 'inhale') {
             this.state = 'gathering';
-            // Soft overlay
+            // Inhale: Gathering energy, chaotic but purposeful
             this.phaseColorOverlay = isDark ? 'rgba(56, 189, 248, 0.5)' : 'rgba(236, 72, 153, 0.3)';
-            this.phaseColorStrength = 0.5;
+            this.phaseColorStrength = 0.6;
+            this.speedScalar = 1.8;
+            this.turbulenceScalar = 1.5;
+
         } else if (phase === 'exhale') {
             this.state = 'dispersing';
+            // Exhale: Release, flow, smooth
             this.phaseColorOverlay = isDark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(45, 212, 191, 0.3)';
-            this.phaseColorStrength = 0.5;
+            this.phaseColorStrength = 0.4;
+            this.speedScalar = 1.0;
+            this.turbulenceScalar = 0.8; // Smooth out
+
         } else if (phase === 'hold') {
              this.state = 'floating';
-             // Intensity ramps up
+             // Hold: Suspension, stillness, tension
              this.phaseColorStrength = 0.8;
+             this.speedScalar = 0.2; // Slow down significantly
+             this.turbulenceScalar = 0.5;
+
         } else {
             this.state = 'idle';
             this.phaseColorStrength = 0;
+            this.speedScalar = 0.5;
+            this.turbulenceScalar = 1.0;
         }
     }
 
@@ -195,8 +211,8 @@ export default class ParticleManager {
         const scale = 0.0012;
         // Layer 1: Base flow
         let angle = (Math.cos(p.x * scale + this.time) + Math.sin(p.y * scale + this.time)) * Math.PI;
-        // Layer 2: Detail turbulence
-        angle += (Math.sin(p.x * 0.01 - this.time * 2) * 0.6);
+        // Layer 2: Detail turbulence (scaled by emotion)
+        angle += (Math.sin(p.x * 0.01 - this.time * 2) * 0.6 * this.turbulenceScalar);
 
         let forceX = Math.cos(angle) * 0.25;
         let forceY = Math.sin(angle) * 0.25;
@@ -246,8 +262,9 @@ export default class ParticleManager {
             }
         }
 
-        p.vx += forceX * 0.04;
-        p.vy += forceY * 0.04;
+        // Apply Speed Scalar to final velocity addition
+        p.vx += forceX * 0.04 * this.speedScalar;
+        p.vy += forceY * 0.04 * this.speedScalar;
 
         p.vx *= 0.95; // Friction
         p.vy *= 0.95;
