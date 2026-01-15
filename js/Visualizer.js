@@ -48,13 +48,17 @@ export default class Visualizer {
         // Close the path for area fill
         const areaD = `${d} L ${getX(data.length - 1)} ${height - padding} L ${getX(0)} ${height - padding} Z`;
 
-        // Points
+        // Points (with staggered animation delay)
         let points = '';
         data.forEach((d, i) => {
             const x = getX(i);
             const y = getY(d.value);
-            points += `<circle cx="${x}" cy="${y}" r="4" fill="var(--bloom-core)" stroke="var(--text-accent)" stroke-width="2" />`;
+            const delay = (i * 0.1) + 0.5; // Stagger start after line draws
+            points += `<circle cx="${x}" cy="${y}" r="4" fill="var(--bloom-core)" stroke="var(--text-accent)" stroke-width="2" class="trend-point" style="animation-delay: ${delay}s" />`;
         });
+
+        // Path total length approximation for dasharray animation (width * 1.5 usually safe)
+        const pathLength = width * 2;
 
         return `
             <svg viewBox="0 0 ${width} ${height}" class="trend-chart" style="overflow: visible; width: 100%; height: 100%;">
@@ -68,11 +72,14 @@ export default class Visualizer {
                 <!-- Zero Line -->
                 <line x1="${padding}" y1="${getY(0)}" x2="${width-padding}" y2="${getY(0)}" stroke="var(--text-secondary)" stroke-opacity="0.3" stroke-dasharray="4 4" />
 
-                <!-- Area -->
-                <path d="${areaD}" fill="url(#chartGradient)" />
+                <!-- Area (Fade In) -->
+                <path d="${areaD}" fill="url(#chartGradient)" class="trend-area" />
 
-                <!-- Line -->
-                <path d="${d}" fill="none" stroke="var(--text-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.2))" />
+                <!-- Line (Draw In) -->
+                <path d="${d}" fill="none" stroke="var(--text-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.2))"
+                      class="trend-line"
+                      stroke-dasharray="${pathLength}"
+                      stroke-dashoffset="${pathLength}" />
 
                 <!-- Points -->
                 ${points}

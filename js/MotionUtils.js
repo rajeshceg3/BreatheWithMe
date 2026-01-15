@@ -5,7 +5,7 @@
 
 export default class MotionUtils {
     constructor() {
-        this.magneticElements = [];
+        this.magneticElements = new WeakMap(); // Store listeners to remove them later if needed
         this.init();
     }
 
@@ -18,9 +18,27 @@ export default class MotionUtils {
         this.addMagneticEffect('.stat-card');
     }
 
-    addMagneticEffect(selector) {
-        const elements = document.querySelectorAll(selector);
+    /**
+     * Attaches magnetic effect to elements matching the selector.
+     * Can be called repeatedly; checks for existing listeners are implicit via WeakMap logic if extended,
+     * but here we just add listeners. To avoid duplicates on re-runs, we should be careful.
+     * Better to use specific element attachment for dynamic items.
+     */
+    addMagneticEffect(target) {
+        let elements;
+        if (typeof target === 'string') {
+            elements = document.querySelectorAll(target);
+        } else if (target instanceof HTMLElement) {
+            elements = [target];
+        } else {
+            return;
+        }
+
         elements.forEach(el => {
+            // Avoid double binding (basic check)
+            if (el.dataset.magneticBound) return;
+            el.dataset.magneticBound = 'true';
+
             el.addEventListener('mousemove', (e) => this.handleMagneticMove(e, el));
             el.addEventListener('mouseleave', (e) => this.handleMagneticLeave(e, el));
             // Add hint for browser optimization
@@ -39,7 +57,11 @@ export default class MotionUtils {
 
         // Strength of the magnetic pull
         const strength = 0.4;
-        const tiltStrength = 0.15;
+        const tiltStrength = 0.12; // Slightly reduced for elegance
+
+        // Incorporate the "Lift" effect (previously CSS translateY(-6px))
+        // We add a negative Y offset to simulate the lift while hovering
+        const liftY = -6;
 
         // Temporarily speed up transition for the magnetic effect to feel responsive
         // We preserve other transitions but override transform transition
@@ -48,22 +70,24 @@ export default class MotionUtils {
         // 3D Tilt Calculation
         // Rotate X is based on Y position (tilt up/down)
         // Rotate Y is based on X position (tilt left/right)
-        const rotateX = -y * tiltStrength;
-        const rotateY = x * tiltStrength;
+        const rotateX = (-y * tiltStrength).toFixed(2);
+        const rotateY = (x * tiltStrength).toFixed(2);
 
-        // Apply transform with Tilt and Scale
+        // Apply transform with Tilt, Scale, and Lift
         el.style.transform = `
-            translate(${x * strength}px, ${y * strength}px)
+            translate(${x * strength}px, ${(y * strength) + liftY}px)
             rotateX(${rotateX}deg)
             rotateY(${rotateY}deg)
             scale(1.05)
         `;
 
         // Parallax for child elements (Text/Icon)
+        // We query every time to ensure we get the content if it changed,
+        // though caching in the WeakMap would be faster.
         const child = el.querySelector('svg') || el.querySelector('span') || el.querySelector('.icon');
         if (child) {
             child.style.transition = 'transform 0.1s linear';
-            child.style.transform = `translate(${x * strength * 0.3}px, ${y * strength * 0.3}px)`;
+            child.style.transform = `translate(${x * strength * 0.25}px, ${y * strength * 0.25}px)`;
         }
     }
 
@@ -71,7 +95,7 @@ export default class MotionUtils {
         // Restore transition for a smooth snap back with elastic bounce
         el.style.transition = 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease';
 
-        // Snap back to center
+        // Snap back to center (0,0) - removing the lift and tilt
         el.style.transform = 'translate(0, 0) rotateX(0) rotateY(0) scale(1)';
 
         const child = el.querySelector('svg') || el.querySelector('span') || el.querySelector('.icon');
@@ -81,6 +105,7 @@ export default class MotionUtils {
         }
 
         // Clean up inline styles after the snap back animation completes
+        // This returns control to CSS for standard hover effects (though mouse is gone)
         setTimeout(() => {
             el.style.transition = '';
             if (child) child.style.transition = '';
