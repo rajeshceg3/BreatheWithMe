@@ -105,9 +105,9 @@
         <div class="modal-content profile-editor-content">
             <h2 id="profile-editor-title">New Mission Profile</h2>
 
-            <div class="input-group">
+            <div class="modern-input-group">
+                <input type="text" id="profile-name" placeholder=" ">
                 <label for="profile-name">Profile Name</label>
-                <input type="text" id="profile-name" placeholder="e.g., Morning Assault">
             </div>
 
             <div class="stages-container">
@@ -118,14 +118,17 @@
             </div>
 
             <div class="add-stage-form">
-                <select id="stage-regiment-select">
-                    <!-- Populated by JS -->
-                </select>
-                <div class="duration-input">
-                    <input type="number" id="stage-duration" min="1" max="60" value="2">
-                    <span>min</span>
+                <div class="modern-input-group" style="flex: 2;">
+                    <select id="stage-regiment-select">
+                        <!-- Populated by JS -->
+                    </select>
+                    <label for="stage-regiment-select">Technique</label>
                 </div>
-                <button id="add-stage-button" class="secondary-button small">Add Phase</button>
+                <div class="modern-input-group" style="flex: 1;">
+                    <input type="number" id="stage-duration" min="1" max="60" value="2" placeholder=" ">
+                    <label for="stage-duration">Minutes</label>
+                </div>
+                <button id="add-stage-button" class="secondary-button small">Add</button>
             </div>
 
             <div class="modal-actions">
@@ -144,7 +147,7 @@
         <h2 id="settings-title">Preferences</h2>
         <fieldset>
             <legend>Technique</legend>
-            <div class="regiment-select-container">
+            <div class="regiment-select-container modern-input-group">
                 <select id="regiment-select" name="breathing-regiment">
                     <option value="coherence">Heart Coherence (Balance)</option>
                     <option value="box-breathing">Box Breathing (Focus)</option>
@@ -153,35 +156,39 @@
                     <option value="mission-reset">Mission Reset (Sequence)</option>
                     <option value="custom">Custom Rhythm</option>
                 </select>
+                <label for="regiment-select">Rhythm</label>
                 <button id="create-profile-button" class="icon-button small" aria-label="Create new mission profile">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 </button>
             </div>
-            <div id="custom-pace-inputs" class="hidden input-group vertical">
-              <div class="input-group">
-                  <div class="input-wrapper">
+            <div id="custom-pace-inputs" class="hidden">
+              <div style="display: flex; gap: 16px;">
+                  <div class="modern-input-group" style="flex: 1;">
+                      <input type="number" id="custom-inhale" min="1" max="60" value="4" placeholder=" ">
                       <label for="custom-inhale">Inhale (s)</label>
-                      <input type="number" id="custom-inhale" min="1" max="60" value="4">
                   </div>
-                  <div class="input-wrapper">
+                  <div class="modern-input-group" style="flex: 1;">
+                      <input type="number" id="custom-hold" min="0" max="60" value="1" placeholder=" ">
                       <label for="custom-hold">Hold (s)</label>
-                      <input type="number" id="custom-hold" min="0" max="60" value="1">
                   </div>
               </div>
-              <div class="input-wrapper">
+              <div class="modern-input-group">
+                  <input type="number" id="custom-exhale" min="1" max="60" value="6" placeholder=" ">
                   <label for="custom-exhale">Exhale (s)</label>
-                  <input type="number" id="custom-exhale" min="1" max="60" value="6">
               </div>
             </div>
         </fieldset>
         <fieldset>
             <legend>Duration</legend>
-            <select id="session-duration" name="session-duration">
-                <option value="3">3 Minutes</option>
-                <option value="5" selected>5 Minutes</option>
-                <option value="10">10 Minutes</option>
-                <option value="15">15 Minutes</option>
-            </select>
+            <div class="modern-input-group">
+                <select id="session-duration" name="session-duration">
+                    <option value="3">3 Minutes</option>
+                    <option value="5" selected>5 Minutes</option>
+                    <option value="10">10 Minutes</option>
+                    <option value="15">15 Minutes</option>
+                </select>
+                <label for="session-duration">Time</label>
+            </div>
         </fieldset>
     </div>
 
