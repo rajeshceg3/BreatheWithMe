@@ -93,7 +93,16 @@ export default class ParticleManager {
         const color1 = c1 || { r: 236, g: 72, b: 153 }; // Default Pink
         const color2 = c2 || { r: 45, g: 212, b: 191 }; // Default Teal
 
-        return Math.random() > 0.5 ? color1 : color2;
+        // Enhance color by mixing slightly
+        const baseColor = Math.random() > 0.5 ? color1 : color2;
+
+        // Add subtle nuanced variation
+        const variation = 20;
+        return {
+            r: Math.max(0, Math.min(255, baseColor.r + (Math.random() * variation * 2 - variation))),
+            g: Math.max(0, Math.min(255, baseColor.g + (Math.random() * variation * 2 - variation))),
+            b: Math.max(0, Math.min(255, baseColor.b + (Math.random() * variation * 2 - variation)))
+        };
     }
 
     setPhase(phase) {
@@ -147,9 +156,11 @@ export default class ParticleManager {
             rgb: { ...colorRGB },
             targetRGB: colorRGB,
             opacity: Math.random() * 0.4 + 0.1,
-            opacitySpeed: (Math.random() * 0.005) + 0.002,
+            opacitySpeed: (Math.random() * 0.002) + 0.001, // Smoother opacity transition
+            maxSpeed: Math.random() * 1.5 + 0.5, // Natural flow limit
             trail: [], // For trailing effect
-            life: Math.random() * 1000
+            life: Math.random() * 1000,
+            phaseOffset: Math.random() * Math.PI * 2 // Personal sine wave offset
         };
         this.particles.push(particle);
     }
@@ -199,23 +210,27 @@ export default class ParticleManager {
         p.rgb.g = lerp(p.rgb.g, p.targetRGB.g, 0.03);
         p.rgb.b = lerp(p.rgb.b, p.targetRGB.b, 0.03);
 
-        // Store history for trails
-        if (this.state === 'dispersing') {
-            p.trail.push({ x: p.x, y: p.y, opacity: p.opacity });
-            if (p.trail.length > 10) p.trail.shift();
-        } else {
-            if (p.trail.length > 0) p.trail.shift();
+        // Store history for trails - Supreme Liquid trails everywhere, longer during disperse
+        p.trail.push({ x: p.x, y: p.y, opacity: p.opacity });
+        const maxTrail = this.state === 'dispersing' ? 15 : 6;
+        if (p.trail.length > maxTrail) {
+            p.trail.shift();
         }
 
         // -- FLOW FIELD LOGIC (SUPREME LIQUID) --
         const scale = 0.0012;
-        // Layer 1: Base flow
-        let angle = (Math.cos(p.x * scale + this.time) + Math.sin(p.y * scale + this.time)) * Math.PI;
-        // Layer 2: Detail turbulence (scaled by emotion)
-        angle += (Math.sin(p.x * 0.01 - this.time * 2) * 0.6 * this.turbulenceScalar);
+        // Layer 1: Base slow undulating flow
+        let angle = (Math.cos(p.x * scale + this.time * 0.5) + Math.sin(p.y * scale + this.time * 0.5)) * Math.PI;
 
-        let forceX = Math.cos(angle) * 0.25;
-        let forceY = Math.sin(angle) * 0.25;
+        // Layer 2: Multi-frequency turbulence for organic liquid feel
+        angle += (Math.sin(p.x * 0.005 - this.time) * 0.4 * this.turbulenceScalar);
+        angle += (Math.cos(p.y * 0.008 + this.time * 1.5) * 0.3 * this.turbulenceScalar);
+
+        // Layer 3: Particle's unique oscillation
+        angle += Math.sin(this.time * 2 + p.phaseOffset) * 0.15;
+
+        let forceX = Math.cos(angle) * 0.3;
+        let forceY = Math.sin(angle) * 0.3;
 
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
@@ -250,24 +265,37 @@ export default class ParticleManager {
             forceY -= 0.1; // Gentle rise
         }
 
-        // Mouse Interaction
+        // Mouse Interaction - Fluid Displacement
         if (this.mouse.x !== null) {
             const mDx = p.x - this.mouse.x;
             const mDy = p.y - this.mouse.y;
             const mDist = Math.sqrt(mDx*mDx + mDy*mDy);
             if (mDist < this.mouse.radius) {
-                const f = (this.mouse.radius - mDist) / this.mouse.radius;
-                forceX += (mDx/mDist) * f * 3.5;
-                forceY += (mDy/mDist) * f * 3.5;
+                const f = Math.pow((this.mouse.radius - mDist) / this.mouse.radius, 2); // Smoother falloff
+
+                // Add a swirl component
+                const swirlAngle = Math.atan2(mDy, mDx) + Math.PI / 2;
+                const swirlForce = f * 1.5;
+
+                forceX += (mDx/mDist) * f * 2.0 + Math.cos(swirlAngle) * swirlForce;
+                forceY += (mDy/mDist) * f * 2.0 + Math.sin(swirlAngle) * swirlForce;
             }
         }
 
         // Apply Speed Scalar to final velocity addition
-        p.vx += forceX * 0.04 * this.speedScalar;
-        p.vy += forceY * 0.04 * this.speedScalar;
+        p.vx += forceX * 0.05 * this.speedScalar;
+        p.vy += forceY * 0.05 * this.speedScalar;
 
-        p.vx *= 0.95; // Friction
-        p.vy *= 0.95;
+        p.vx *= 0.94; // Friction
+        p.vy *= 0.94;
+
+        // Speed Limiting for organic feel
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        const currentMax = p.maxSpeed * this.speedScalar * 2.5; // Allow bursts
+        if (speed > currentMax) {
+            p.vx = (p.vx / speed) * currentMax;
+            p.vy = (p.vy / speed) * currentMax;
+        }
 
         p.x += p.vx;
         p.y += p.vy;
@@ -281,19 +309,26 @@ export default class ParticleManager {
     }
 
     drawConnections() {
-        this.ctx.lineWidth = 0.5;
+        this.ctx.lineWidth = 0.6;
         for (let i = 0; i < this.particles.length; i++) {
             const p1 = this.particles[i];
             // Only check a subset to save performance
-            for (let j = i + 1; j < this.particles.length; j++) {
+            for (let j = i + 1; j < this.particles.length; j += 2) {
                 const p2 = this.particles[j];
                 const dx = p1.x - p2.x;
                 const dy = p1.y - p2.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
 
-                if (dist < 100) {
-                    const opacity = (1 - dist / 100) * 0.15;
-                    this.ctx.strokeStyle = `rgba(${p1.rgb.r}, ${p1.rgb.g}, ${p1.rgb.b}, ${opacity})`;
+                const maxDist = 120;
+                if (dist < maxDist) {
+                    const opacity = Math.pow(1 - dist / maxDist, 2) * 0.2; // Quadratic fade for elegance
+
+                    // Gradient connection
+                    const gradient = this.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                    gradient.addColorStop(0, `rgba(${p1.rgb.r}, ${p1.rgb.g}, ${p1.rgb.b}, ${opacity})`);
+                    gradient.addColorStop(1, `rgba(${p2.rgb.r}, ${p2.rgb.g}, ${p2.rgb.b}, ${opacity})`);
+
+                    this.ctx.strokeStyle = gradient;
                     this.ctx.beginPath();
                     this.ctx.moveTo(p1.x, p1.y);
                     this.ctx.lineTo(p2.x, p2.y);
