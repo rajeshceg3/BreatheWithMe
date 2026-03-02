@@ -6,6 +6,7 @@ import AnimationManager from './AnimationManager.js';
 import RegimentManager from './RegimentManager.js';
 import AnalyticsManager from './AnalyticsManager.js';
 import SessionManager from './SessionManager.js';
+import confetti from 'canvas-confetti';
 
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
@@ -412,7 +413,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
-                uiMediator.updateInstructionText("Session complete. Mission accomplished.", true);
+                uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF']
+                });
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
             }
@@ -437,7 +444,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     postStress: null
                 });
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
-                uiMediator.updateInstructionText("Session complete.", true);
+                uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF']
+                });
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
             }
