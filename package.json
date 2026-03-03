@@ -23,5 +23,8 @@
     "vite": "^7.3.0",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4"
   }
 }
