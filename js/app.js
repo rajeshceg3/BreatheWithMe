@@ -414,12 +414,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
                 uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF']
-                });
+
+                // Multi-stage confetti burst
+                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF'];
+                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.2, y: 0.6 }, colors: colors }), 0);
+                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.8, y: 0.6 }, colors: colors }), 200);
+                setTimeout(() => confetti({ particleCount: 120, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: colors }), 400);
+
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
             }
@@ -445,12 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
                 uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF']
-                });
+
+                // Multi-stage confetti burst
+                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF'];
+                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.2, y: 0.6 }, colors: colors }), 0);
+                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.8, y: 0.6 }, colors: colors }), 200);
+                setTimeout(() => confetti({ particleCount: 120, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: colors }), 400);
+
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
             }

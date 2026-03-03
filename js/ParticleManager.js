@@ -160,7 +160,8 @@ export default class ParticleManager {
             maxSpeed: Math.random() * 1.5 + 0.5, // Natural flow limit
             trail: [], // For trailing effect
             life: Math.random() * 1000,
-            phaseOffset: Math.random() * Math.PI * 2 // Personal sine wave offset
+            phaseOffset: Math.random() * Math.PI * 2, // Personal sine wave offset
+            sparkle: Math.random() > 0.95 // 5% chance to be a sparkling particle
         };
         this.particles.push(particle);
     }
@@ -217,6 +218,11 @@ export default class ParticleManager {
             p.trail.shift();
         }
 
+        // Sparkle effect
+        if (p.sparkle) {
+            p.opacity = Math.random() * 0.8 + 0.2;
+        }
+
         // -- FLOW FIELD LOGIC (SUPREME LIQUID) --
         const scale = 0.0012;
         // Layer 1: Base slow undulating flow
@@ -226,7 +232,10 @@ export default class ParticleManager {
         angle += (Math.sin(p.x * 0.005 - this.time) * 0.4 * this.turbulenceScalar);
         angle += (Math.cos(p.y * 0.008 + this.time * 1.5) * 0.3 * this.turbulenceScalar);
 
-        // Layer 3: Particle's unique oscillation
+        // Layer 3: Tertiary sine wave layer for extra fluidity
+        angle += (Math.sin((p.x + p.y) * 0.003 + this.time) * 0.2 * this.turbulenceScalar);
+
+        // Layer 4: Particle's unique oscillation
         angle += Math.sin(this.time * 2 + p.phaseOffset) * 0.15;
 
         let forceX = Math.cos(angle) * 0.3;
@@ -245,6 +254,12 @@ export default class ParticleManager {
             forceX += Math.cos(spiralAngle) * 0.9;
             forceY += Math.sin(spiralAngle) * 0.9;
             forceX += (dx / dist) * 0.5;
+
+            // Interact slightly with breathing bloom (move away if too close)
+            if (dist < 150) {
+                 forceX -= (dx / dist) * 1.5;
+                 forceY -= (dy / dist) * 1.5;
+            }
 
         } else if (this.state === 'dispersing') {
             // Radiant Out with Curl
