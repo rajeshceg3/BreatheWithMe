@@ -27,11 +27,24 @@ export default class ParticleManager {
         this.speedScalar = 0.5;
         this.turbulenceScalar = 1.0;
 
+        // Magical Dust Particles Array
+        this.dustParticles = [];
+
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         window.addEventListener('mousemove', (event) => {
+            const prevX = this.mouse.x;
+            const prevY = this.mouse.y;
             this.mouse.x = event.clientX;
             this.mouse.y = event.clientY;
+
+            // Spawn magical dust if mouse moves significantly
+            if (prevX !== null && prevY !== null) {
+                const dist = Math.sqrt(Math.pow(this.mouse.x - prevX, 2) + Math.pow(this.mouse.y - prevY, 2));
+                if (dist > 5) {
+                    this.spawnDustParticles(this.mouse.x, this.mouse.y, Math.min(dist / 5, 3));
+                }
+            }
         });
         window.addEventListener('mouseout', () => {
             this.mouse.x = null;
@@ -166,8 +179,27 @@ export default class ParticleManager {
         this.particles.push(particle);
     }
 
-    init(count = 200) {
+    spawnDustParticles(x, y, amount) {
+        for (let i = 0; i < amount; i++) {
+            const colorRGB = this.getParticleColorRGB();
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 2 + 0.5;
+            this.dustParticles.push({
+                x: x + (Math.random() - 0.5) * 10,
+                y: y + (Math.random() - 0.5) * 10,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1.0,
+                decay: Math.random() * 0.02 + 0.015,
+                radius: Math.random() * 2.0 + 0.5,
+                rgb: colorRGB
+            });
+        }
+    }
+
+    init(count = 250) { // Increased count slightly
         this.particles = [];
+        this.dustParticles = [];
         for (let i = 0; i < count; i++) {
             this.createParticle();
         }
@@ -196,6 +228,31 @@ export default class ParticleManager {
             this.updateParticle(p);
             this.drawParticle(p);
         });
+
+        // Update and draw magical dust particles
+        for (let i = this.dustParticles.length - 1; i >= 0; i--) {
+            const dp = this.dustParticles[i];
+            dp.x += dp.vx;
+            dp.y += dp.vy;
+            dp.life -= dp.decay;
+            dp.vx *= 0.95;
+            dp.vy *= 0.95;
+
+            if (dp.life <= 0) {
+                this.dustParticles.splice(i, 1);
+            } else {
+                this.ctx.fillStyle = `rgba(${dp.rgb.r}, ${dp.rgb.g}, ${dp.rgb.b}, ${dp.life * 0.8})`;
+                this.ctx.beginPath();
+                this.ctx.arc(dp.x, dp.y, dp.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Add a little magical glow to dust
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${dp.life * 0.4})`;
+                this.ctx.beginPath();
+                this.ctx.arc(dp.x, dp.y, dp.radius * 0.5, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
     }
 
     updateParticle(p) {

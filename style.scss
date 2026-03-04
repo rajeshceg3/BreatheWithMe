@@ -180,9 +180,9 @@ body::before {
             var(--bg-gradient-1)
         );
     filter: blur(100px); /* Softened further */
-    opacity: 0.6;
+    opacity: 0.75; /* A bit more vibrant */
     z-index: -2;
-    animation: aurora-spin 180s linear infinite; /* Slower, more majestic */
+    animation: aurora-spin 120s linear infinite; /* Slightly faster for more perceived magic */
 }
 
 // Layer 2: The Floating Orbs (Breathing)
@@ -365,7 +365,7 @@ h1, h2, h3, h4, button {
         inset 0 0 40px rgba(255, 255, 255, 0.5);
 
     // Pulse Animation when Idle
-    animation: gentle-pulse 6s infinite ease-in-out;
+    animation: gentle-pulse 4s infinite ease-in-out; // Faster, more encouraging pulse
 
     // Sheen
     &::after {
@@ -851,7 +851,7 @@ body[data-theme='dark'] select {
 
 @keyframes aurora-spin {
     0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.15); }
+    50% { transform: rotate(180deg) scale(1.2); }
     100% { transform: rotate(360deg) scale(1); }
 }
 

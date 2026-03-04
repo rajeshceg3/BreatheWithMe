@@ -238,11 +238,13 @@ export default class SessionManager {
         if (phase === 'inhale') {
             this.uiMediator.updateInstructionText(`Breathe In (${paceSettings.inhale}s)...`);
             this.particleManager.setPhase('inhale');
+            if (navigator.vibrate) navigator.vibrate(30); // Subtle single pulse for inhale
             this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold1'), delay);
         } else if (phase === 'hold1') {
             if (paceSettings.hold1 > 0) {
                 this.uiMediator.updateInstructionText(`Hold (${paceSettings.hold1}s)...`);
                 this.particleManager.setPhase('idle');
+                if (navigator.vibrate) navigator.vibrate([10, 50, 10]); // Quick double pulse for hold
                 this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('exhale'), delay);
             } else {
                 this.startSoundCycle('exhale');
@@ -250,11 +252,13 @@ export default class SessionManager {
         } else if (phase === 'exhale') {
             this.uiMediator.updateInstructionText(`Breathe Out (${paceSettings.exhale}s)...`);
             this.particleManager.setPhase('exhale');
+            if (navigator.vibrate) navigator.vibrate(50); // Slightly longer pulse for exhale
             this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('hold2'), delay);
         } else if (phase === 'hold2') {
              if (paceSettings.hold2 > 0) {
                 this.uiMediator.updateInstructionText(`Hold (${paceSettings.hold2}s)...`);
                 this.particleManager.setPhase('idle');
+                if (navigator.vibrate) navigator.vibrate([10, 50, 10]); // Quick double pulse for hold
                 this.soundSyncTimeoutId = setTimeout(() => this.startSoundCycle('inhale'), delay);
              } else {
                 this.startSoundCycle('inhale');
