@@ -318,8 +318,9 @@ h1, h2, h3, h4, button {
 
     &:hover {
         color: var(--text-primary);
-        &::before { opacity: 0.08; transform: scale(1); }
-        svg { transform: scale(1.1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+        &::before { opacity: 0.12; transform: scale(1); }
+        svg { transform: scale(1.15); filter: drop-shadow(0 6px 12px rgba(var(--particle-color-1), 0.3)); }
+        box-shadow: 0 0 20px rgba(var(--particle-color-1), 0.2);
     }
 
     // Active State for toggles
@@ -388,10 +389,12 @@ h1, h2, h3, h4, button {
     &:hover {
         border-color: var(--text-accent);
         color: var(--text-accent);
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.35);
         box-shadow:
-            0 35px 80px -20px rgba(var(--particle-color-1), 0.5),
-            inset 0 0 30px rgba(255, 255, 255, 0.7);
+            0 45px 100px -20px rgba(var(--particle-color-1), 0.7),
+            0 0 40px rgba(var(--particle-color-1), 0.4),
+            inset 0 0 40px rgba(255, 255, 255, 0.8);
+        transform: scale(1.02);
 
         &::after {
             animation: none; // Reset auto animation
@@ -401,8 +404,8 @@ h1, h2, h3, h4, button {
     }
 
     &:active {
-        transform: translateY(0) scale(0.96);
-        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2);
+        transform: translateY(0) scale(0.94);
+        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
     }
 }
 
@@ -514,6 +517,19 @@ h1, h2, h3, h4, button {
         transform: scale(0.8);
         animation: breathe-aura var(--total-animation-duration) var(--breathing-ease) infinite paused;
         box-shadow: 0 0 60px var(--bloom-outer);
+    }
+
+    // Layer 4: The Warp
+    .breathe-warp {
+        position: absolute;
+        inset: -10%;
+        border-radius: 50%;
+        border: 1px solid var(--bloom-inner);
+        opacity: 0;
+        transform: scale(1);
+        animation: breathe-warp var(--total-animation-duration) var(--breathing-ease) infinite paused;
+        box-shadow: 0 0 30px var(--bloom-inner), inset 0 0 40px var(--bloom-inner);
+        pointer-events: none;
     }
 }
 
@@ -903,26 +919,34 @@ body[data-theme='dark'] select {
 
 // Refined Breathing Animation (Sequence)
 @keyframes breathe-core {
-    0% { transform: scale(0.25); opacity: 0.9; }
-    #{$inhale-end-percent} { transform: scale(var(--circle-scale-max)); opacity: 1; }
-    #{$hold1-end-percent} { transform: scale(var(--circle-scale-max)); opacity: 1; }
-    #{$exhale-end-percent} { transform: scale(0.25); opacity: 0.9; }
-    100% { transform: scale(0.25); opacity: 0.9; }
+    0% { transform: scale(0.25) rotate(0deg); opacity: 0.9; }
+    #{$inhale-end-percent} { transform: scale(var(--circle-scale-max)) rotate(45deg); opacity: 1; }
+    #{$hold1-end-percent} { transform: scale(var(--circle-scale-max)) rotate(45deg); opacity: 1; }
+    #{$exhale-end-percent} { transform: scale(0.25) rotate(90deg); opacity: 0.9; }
+    100% { transform: scale(0.25) rotate(90deg); opacity: 0.9; }
 }
 
 @keyframes breathe-inner {
-    0% { transform: scale(0.5); opacity: 0; filter: blur(50px); }
-    #{$inhale-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.35)); opacity: 0.8; filter: blur(80px); }
-    #{$hold1-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.35)); opacity: 0.8; }
-    #{$exhale-end-percent} { transform: scale(0.5); opacity: 0; filter: blur(50px); }
-    100% { transform: scale(0.5); opacity: 0; }
+    0% { transform: scale(0.5) rotate(0deg); opacity: 0; filter: blur(50px); }
+    #{$inhale-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.35)) rotate(-30deg); opacity: 0.8; filter: blur(80px); }
+    #{$hold1-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.35)) rotate(-30deg); opacity: 0.8; }
+    #{$exhale-end-percent} { transform: scale(0.5) rotate(-60deg); opacity: 0; filter: blur(50px); }
+    100% { transform: scale(0.5) rotate(-60deg); opacity: 0; }
 }
 
 @keyframes breathe-aura {
-    0% { transform: scale(0.8); opacity: 0; border-width: 2px; }
-    #{$inhale-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.6)); opacity: 0.45; border-width: 1px; }
-    #{$hold1-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.7)); opacity: 0.15; }
-    100% { transform: scale(calc(var(--circle-scale-max) * 1.8)); opacity: 0; }
+    0% { transform: scale(0.8) rotate(0deg); opacity: 0; border-width: 2px; }
+    #{$inhale-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.6)) rotate(60deg); opacity: 0.45; border-width: 1px; }
+    #{$hold1-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.7)) rotate(60deg); opacity: 0.15; }
+    100% { transform: scale(calc(var(--circle-scale-max) * 1.8)) rotate(120deg); opacity: 0; }
+}
+
+@keyframes breathe-warp {
+    0% { transform: scale(0.6) rotate(0deg); opacity: 0; border-radius: 50%; }
+    #{$inhale-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.1)) rotate(90deg); opacity: 0.3; border-radius: 40%; }
+    #{$hold1-end-percent} { transform: scale(calc(var(--circle-scale-max) * 1.2)) rotate(180deg); opacity: 0.6; border-radius: 45%; }
+    #{$exhale-end-percent} { transform: scale(0.6) rotate(270deg); opacity: 0; border-radius: 50%; }
+    100% { transform: scale(0.6) rotate(360deg); opacity: 0; border-radius: 50%; }
 }
 
 // Fade Overlay

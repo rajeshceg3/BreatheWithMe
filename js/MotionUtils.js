@@ -56,12 +56,12 @@ export default class MotionUtils {
         const y = e.clientY - centerY;
 
         // Strength of the magnetic pull
-        const strength = 0.4;
-        const tiltStrength = 0.12; // Slightly reduced for elegance
+        const strength = 0.5; // Increased for more pull
+        const tiltStrength = 0.18; // Increased for stronger 3D effect
 
         // Incorporate the "Lift" effect (previously CSS translateY(-6px))
         // We add a negative Y offset to simulate the lift while hovering
-        const liftY = -6;
+        const liftY = -8; // Increased lift
 
         // Temporarily speed up transition for the magnetic effect to feel responsive
         // We preserve other transitions but override transform transition
@@ -78,7 +78,7 @@ export default class MotionUtils {
             translate(${x * strength}px, ${(y * strength) + liftY}px)
             rotateX(${rotateX}deg)
             rotateY(${rotateY}deg)
-            scale(1.05)
+            scale(1.08)
         `;
 
         // Parallax for child elements (Text/Icon)
