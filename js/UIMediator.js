@@ -90,9 +90,21 @@ export default class UIMediator {
             this.instructionText.classList.remove('text-fade-out'); // Fade in
             if (isSessionCompletion) {
                 this.instructionText.classList.add('session-complete-effect');
+                // Give it an extra magical pop by making it slightly larger and changing color temporarily
+                this.instructionText.style.transform = 'scale(1.2) translateY(-10px)';
+                this.instructionText.style.color = 'var(--text-accent)';
+
                 this.instructionText.addEventListener('animationend', () => {
                     this.instructionText.classList.remove('session-complete-effect');
+                    this.instructionText.style.transform = '';
+                    this.instructionText.style.color = '';
                 }, { once: true });
+
+                // Backup reset if animation event fails
+                setTimeout(() => {
+                    this.instructionText.style.transform = '';
+                    this.instructionText.style.color = '';
+                }, 3000);
             }
         }, 400); // Match CSS transition duration
     }

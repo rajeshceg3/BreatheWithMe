@@ -415,11 +415,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
                 uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
 
-                // Multi-stage confetti burst
-                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF'];
-                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.2, y: 0.6 }, colors: colors }), 0);
-                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.8, y: 0.6 }, colors: colors }), 200);
-                setTimeout(() => confetti({ particleCount: 120, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: colors }), 400);
+                // Joyful multi-stage confetti burst
+                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF', '#FFD700', '#FF69B4'];
+                setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { x: 0.2, y: 0.7 }, startVelocity: 45, colors: colors }), 0);
+                setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { x: 0.8, y: 0.7 }, startVelocity: 45, colors: colors }), 200);
+                setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { x: 0.5, y: 0.5 }, startVelocity: 60, colors: colors }), 400);
+                // Final magical rain
+                setTimeout(() => confetti({ particleCount: 100, spread: 160, origin: { x: 0.5, y: 0.1 }, startVelocity: 30, colors: colors, ticks: 300, gravity: 0.5 }), 800);
 
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
@@ -447,11 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionManager.currentSessionData = { startTime: null, preStress: null };
                 uiMediator.updateInstructionText("Session complete. A beautiful journey.", true);
 
-                // Multi-stage confetti burst
-                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF'];
-                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.2, y: 0.6 }, colors: colors }), 0);
-                setTimeout(() => confetti({ particleCount: 80, spread: 50, origin: { x: 0.8, y: 0.6 }, colors: colors }), 200);
-                setTimeout(() => confetti({ particleCount: 120, spread: 80, origin: { x: 0.5, y: 0.5 }, colors: colors }), 400);
+                // Joyful multi-stage confetti burst
+                const colors = ['#38BDF8', '#A855F7', '#F472B6', '#2DD4BF', '#FFD700', '#FF69B4'];
+                setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { x: 0.2, y: 0.7 }, startVelocity: 45, colors: colors }), 0);
+                setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { x: 0.8, y: 0.7 }, startVelocity: 45, colors: colors }), 200);
+                setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { x: 0.5, y: 0.5 }, startVelocity: 60, colors: colors }), 400);
+                // Final magical rain
+                setTimeout(() => confetti({ particleCount: 100, spread: 160, origin: { x: 0.5, y: 0.1 }, startVelocity: 30, colors: colors, ticks: 300, gravity: 0.5 }), 800);
 
                 setTimeout(() => uiMediator.toggleFadeOverlay(false), 2000);
                 sessionManager.showControls();
