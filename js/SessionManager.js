@@ -161,13 +161,42 @@ export default class SessionManager {
             }, 1500);
         } else {
              const currentPaceSettings = this.regimentManager.getCurrentRegiment().pattern;
-             // If in sequence, might want to show which phase paused, but simple is fine
+             // Manual pause: remember remaining time so Begin can truly resume.
+             this.remainingMs = this.sessionEndTime ? Math.max(0, this.sessionEndTime - Date.now()) : null;
+             this.pauseTime = Date.now();
              this.uiMediator.updateInstructionText(`Paused. Resume with Begin (${currentPaceSettings.inhale}s)...`);
              this.sessionEndTime = null;
-             this.pauseTime = null;
              this.uiMediator.toggleFadeOverlay(false);
              this.showControls();
         }
+    }
+
+    resumeSession() {
+        if (!this.currentSessionData.startTime) return false;
+
+        if (this.isSequenceActive) {
+            // Sequences restart the current phase on resume.
+            this.uiMediator.toggleFadeOverlay(false);
+            this.animationManager.play();
+            this.uiMediator.updateSessionButton(true);
+            this.startSequencePhase();
+        } else {
+            this.animationManager.play();
+            this.uiMediator.updateSessionButton(true);
+            this.uiMediator.updateInstructionText(`Resumed (${this.regimentManager.getCurrentRegiment().pattern.inhale}s)...`);
+            this.startSoundCycle(this.currentPhaseForResume || 'inhale');
+            if (this.remainingMs != null) {
+                this.sessionEndTime = Date.now() + this.remainingMs;
+                clearTimeout(this.sessionEndTimerId);
+                this.sessionEndTimerId = setTimeout(() => {
+                    this.endSessionRoutine(true);
+                }, this.remainingMs);
+            }
+            this.hideControlsAfterDelay();
+        }
+        this.pauseTime = null;
+        this.remainingMs = null;
+        return true;
     }
 
     startSoundCycle(phase = 'inhale') {
