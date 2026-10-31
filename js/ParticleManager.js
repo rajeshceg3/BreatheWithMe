@@ -17,6 +17,8 @@ export default class ParticleManager {
         this.mouse = { x: null, y: null, radius: 300 };
         this.phase = 'idle';
 
+        this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         this.time = 0; // Global time for noise
 
         // Dynamic colors for breathing phases
@@ -209,12 +211,15 @@ export default class ParticleManager {
     }
 
     animate() {
-        if (document.hidden) {
+        if (this.prefersReducedMotion) {
+            // Reduced motion: draw one static frame instead of running the loop.
+            this.animationFrameId = null;
+        } else if (document.hidden) {
              this.animationFrameId = requestAnimationFrame(() => this.animate());
              return;
+        } else {
+            this.animationFrameId = requestAnimationFrame(() => this.animate());
         }
-
-        this.animationFrameId = requestAnimationFrame(() => this.animate());
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.time += 0.002;
