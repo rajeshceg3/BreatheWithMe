@@ -13,28 +13,29 @@ export default class AnimationManager {
 
     play() {
         if (this.breathingCircle && !this.prefersReducedMotion) {
-            this.breathingCircle.style.animationPlayState = 'running';
+            this.breathingCircle.style.animationPlayState = 'running'; // state marker read elsewhere
+            this.breathingCircle.classList.add('playing'); // actually drives the pseudo-element animations
         }
     }
 
     pause() {
         if (this.breathingCircle && !this.prefersReducedMotion) {
             this.breathingCircle.style.animationPlayState = 'paused';
+            this.breathingCircle.classList.remove('playing');
         }
     }
 
     reset() {
         if (this.breathingCircle && !this.prefersReducedMotion) {
-            // By setting the animationName to none and then removing the property,
-            // the browser will re-apply the animations defined in the CSS,
-            // which are 'breathe-core' and 'breathe-glow' for the pseudo-elements.
-            this.breathingCircle.style.animationName = 'none';
-            requestAnimationFrame(() => {
-                // This little delay is crucial to ensure the browser has time to process the 'none' value.
-                setTimeout(() => {
-                    this.breathingCircle.style.animationName = '';
-                }, 0);
-            });
+            // Restart the pseudo-element animations by toggling the driving class.
+            // (Inline animationName/animationPlayState on the parent never reached the pseudos.)
+            const wasPlaying = this.breathingCircle.style.animationPlayState === 'running';
+            this.breathingCircle.classList.remove('playing');
+            void this.breathingCircle.offsetWidth; // force reflow so the animation restarts
+            if (wasPlaying) {
+                this.breathingCircle.classList.add('playing');
+            }
         }
     }
+
 }

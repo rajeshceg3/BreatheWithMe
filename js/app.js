@@ -468,7 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const isPlaying = (breathingCircle && breathingCircle.style.animationPlayState === 'running') ||
                               (animationManager.prefersReducedMotion && uiMediator.sessionButton.textContent === 'End');
             if (isPlaying) {
-                sessionManager.endSessionRoutine(false); // Manual pause/stop
+                sessionManager.endSessionRoutine(false); // Manual pause
+            } else if (sessionManager.currentSessionData.startTime !== null) {
+                sessionManager.resumeSession(); // True resume after pause - no new check-in
             } else {
                 sessionManager.startSessionRoutine();
             }
