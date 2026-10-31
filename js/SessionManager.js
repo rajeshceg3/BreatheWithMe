@@ -157,6 +157,10 @@ export default class SessionManager {
         if (completed) {
             this.uiMediator.toggleFadeOverlay(true);
             setTimeout(() => {
+                // The fade overlay (z-index 200) sits above the stress modal
+                // (z-index 100); release it as the check-in appears or the
+                // modal stays hidden and unclickable behind it.
+                this.uiMediator.toggleFadeOverlay(false);
                 this.uiMediator.toggleStressModal(true);
             }, 1500);
         } else {
