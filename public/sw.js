@@ -1,29 +1,20 @@
-const CACHE_NAME = 'breathe-v1';
+const CACHE_NAME = 'breathe-v2';
+// Only files that exist at stable paths in the built site. Hashed vite
+// assets (/assets/index-*.js|css) are cached at runtime, not install time.
 const ASSETS_TO_CACHE = [
     './',
-    './index.html',
-    './style.css',
     './logo.svg',
     './favicon.ico',
-    './js/app.js',
-    './js/AudioManager.js',
-    './js/AnimationManager.js',
-    './js/AnalyticsManager.js',
-    './js/ParticleManager.js',
-    './js/RegimentManager.js',
-    './js/SessionManager.js',
-    './js/ThemeManager.js',
-    './js/UIMediator.js',
-    './js/Visualizer.js'
+    './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(ASSETS_TO_CACHE);
-            })
-    );
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        // One missing file must never fail the whole install.
+        await Promise.allSettled(ASSETS_TO_CACHE.map((asset) => cache.add(asset)));
+        self.skipWaiting();
+    })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -36,18 +27,24 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
 self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) {
+        return;
+    }
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                if (response) {
-                    return response;
+        caches.match(event.request).then((cached) => {
+            const fetched = fetch(event.request).then((response) => {
+                if (response.ok) {
+                    const copy = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
                 }
-                return fetch(event.request);
-            })
+                return response;
+            });
+            return cached || fetched;
+        })
     );
 });
