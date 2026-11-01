@@ -32,13 +32,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) {
+    if (event.request.method !== 'GET') {
         return;
+    }
+    const url = new URL(event.request.url);
+    if (url.origin !== self.location.origin) {
+        return; // never touch external or cross-origin requests
     }
     event.respondWith(
         caches.match(event.request).then((cached) => {
             const fetched = fetch(event.request).then((response) => {
-                if (response.ok) {
+                // Cache only plain same-origin successes; never opaque,
+                // redirected, partial, or error responses.
+                if (response.ok && response.type === 'basic') {
                     const copy = response.clone();
                     caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
                 }
