@@ -4,3 +4,6 @@
 #breathing-circle.playing::before,#breathing-circle.playing::after{animation-play-state:running}
 @media (prefers-reduced-motion: reduce){#breathing-circle::before,#breathing-circle::after{animation:none}}
 @media(max-width: 480px){:root{--circle-scale-max: 1.6}#breathing-circle{width:100px;height:100px}}
+.slider-container{display:flex;align-items:center;gap:12px}
+.slider-container span{font-size:.85rem;white-space:nowrap}
+.slider-container input[type=range]{flex:1;width:auto}
