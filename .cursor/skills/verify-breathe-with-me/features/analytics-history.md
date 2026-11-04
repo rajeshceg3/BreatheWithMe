@@ -10,7 +10,7 @@ Completed sessions are logged and shown in the analytics panel.
 Bar-chart icon (top bar) opens the analytics panel after at least one completed session.
 
 ## Driving it with drive.mjs
-The `completion` journey asserts `breath_analytics_data.sessions` grew by exactly 1 after the post check-in. Follow up manually: open the analytics panel and confirm the new entry renders.
+The `completion` journey asserts `breath_analytics_data.sessions` grew by exactly 1 after the post check-in. It also opens analytics and asserts the panel renders. Specific per-record fields, calculated totals and trends still need manual checking.
 
 ## Gotchas
 - History writes happen ONLY in the post-check branch (Continue or Skip). If the modal cannot be submitted (see session-lifecycle gotchas), history silently stays empty.

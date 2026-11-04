@@ -26,9 +26,11 @@ Harness: `helpers/drive.mjs` (Node 18+, `puppeteer-core`, system Chrome at `$CHR
 
 ```
 node .cursor/skills/verify-breathe-with-me/helpers/drive.mjs lifecycle  --base <URL> [--reduced] [--mobile] [--out DIR]
+node .cursor/skills/verify-breathe-with-me/helpers/drive.mjs settings   --base <URL> [--mobile] [--out DIR]
 node .cursor/skills/verify-breathe-with-me/helpers/drive.mjs completion --base <URL> [--reduced] [--virtual-minutes N] [--out DIR]
 ```
 
+- `settings`: open/close preferences; select five minutes; toggle theme and sound; reload and assert all three persisted. This checks sound state, not audible quality.
 - `lifecycle`: Begin -> pre-check Continue -> mid-session assertions -> End (pause) -> Begin (resume, no new check-in) -> End.
 - `completion`: full natural completion. Against production this takes the selected real duration (default 3 min). For local runs only, scaffold speed by temporarily patching `SESSION_DURATIONS['3']` in `js/SessionManager.js` to `8 * 1000`, and REVERT before committing; never ship the patch. Against production there is no shortcut: run the real duration (3 min is shortest). At least one real-time full-duration production walk is required before closing a lifecycle-affecting change.
 - `--reduced` launches Chrome with `--force-prefers-reduced-motion`.
@@ -37,6 +39,8 @@ node .cursor/skills/verify-breathe-with-me/helpers/drive.mjs completion --base <
 Stable selectors (use these, not coordinates): `#session-button`, `#submit-stress-button`, `#skip-stress-button`, `#stress-modal`, `#fade-overlay`, `#instruction-text`, `#breathing-circle`.
 
 ## Evidence
+
+Each named journey throws on contract failure, then exits nonzero. Unknown journey names are rejected. JSON is retained in the output directory as well as stdout.
 
 JSON to stdout plus screenshots in `--out` (default `.verification-evidence/`, gitignored). A passing proof must show the ACTION and the RESULTING STATE:
 - mid-session: button text `End`, `::after` animationPlayState `running` (normal) / animationName `none` (reduced), phase instruction text

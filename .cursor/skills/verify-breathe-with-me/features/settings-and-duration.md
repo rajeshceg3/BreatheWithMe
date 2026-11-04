@@ -11,7 +11,7 @@ Session length, sound, and theme.
 Gear icon (top bar) opens the settings panel; speaker and moon icons are direct top-bar toggles.
 
 ## Driving it with drive.mjs
-Doctor confirms controls render. Manual/spot verification: change duration, reload, confirm the select reflects the saved value; toggle theme and confirm `data-theme` flips and persists across reload.
+Run `settings` at desktop and mobile widths. It opens preferences, selects five minutes, closes preferences, toggles theme and sound through visible controls, reloads, and asserts duration, theme and enabled sound state persist. Audible quality is not checked.
 
 ## Gotchas
 - The settings panel shares z-index 100 with modals; the fade overlay (200) must not be left on over it.
