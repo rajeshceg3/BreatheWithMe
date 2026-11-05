@@ -9,6 +9,16 @@ import SessionManager from './SessionManager.js';
 import confetti from 'canvas-confetti';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Offline support: register the service worker after load ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch((err) => {
+                console.warn('Service worker registration failed:', err);
+            });
+        });
+    }
+
     // DOM Elements
     const breathingCircle = document.getElementById('breathing-circle');
     const customPaceInputs = document.getElementById('custom-pace-inputs');
