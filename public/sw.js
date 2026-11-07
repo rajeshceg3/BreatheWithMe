@@ -1,4 +1,4 @@
-const CACHE_NAME = 'breathe-v2';
+const CACHE_NAME = 'breathe-v3';
 // Only files that exist at stable paths in the built site. Hashed vite
 // assets (/assets/index-*.js|css) are cached at runtime, not install time.
 const ASSETS_TO_CACHE = [

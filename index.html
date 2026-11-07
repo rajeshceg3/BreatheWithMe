@@ -140,11 +140,11 @@
 
     <!-- Settings Panel (Merged) -->
     <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
+        <div class="settings-closebar"><button id="close-settings-button" class="icon-button close-modal" aria-label="Close settings panel">
             <!-- Close Icon -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
-        <h2 id="settings-title">Preferences</h2>
+        </div><h2 id="settings-title">Preferences</h2>
         <fieldset>
             <legend>Technique</legend>
             <div class="regiment-select-container modern-input-group">
@@ -190,6 +190,13 @@
                 <label for="session-duration">Time</label>
             </div>
         </fieldset>
+        <details id="journey-recovery"><summary>Keep or restore your journey</summary>
+            <p>Completed sessions, custom profiles and preferences are saved in this browser only. Live breath timers are not included. Transfer a file manually to your private saved-app home for cloud storage. No automatic sync.</p>
+            <button id="journey-export" class="secondary-button">Download browser recovery file</button>
+            <label for="journey-file">Choose private selected-version restore file</label><input id="journey-file" type="file" accept="application/json,.json">
+            <button id="journey-preview" class="secondary-button">Preview restore</button><button id="journey-confirm" class="primary-button" disabled>Confirm replacement and reload</button>
+            <p id="journey-message" role="status">Preview first. Nothing is replaced until you confirm.</p><div id="journey-downloads"></div>
+        </details>
     </div>
 
     <!-- Main JS (Vite Module) -->

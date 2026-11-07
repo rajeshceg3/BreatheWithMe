@@ -1,3 +1,4 @@
+import{initJourneyRecovery}from'./journey-recovery-ui.js';
 import AudioManager from './AudioManager.js';
 import ThemeManager from './ThemeManager.js';
 import ParticleManager from './ParticleManager.js';
@@ -46,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
         uiMediator,
         analyticsManager
     });
+
+    initJourneyRecovery(()=>sessionManager.currentSessionData.startTime!==null || document.getElementById('stress-modal')?.classList.contains('visible'));
 
     // App State
     let previouslyFocusedElement = null;
@@ -272,6 +275,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openProfileEditor() {
+        // Only one active reading/form surface. The settings panel otherwise
+        // sits above the profile modal and intercepts its controls.
+        uiMediator.toggleSettingsPanel(false);
         pendingProfileStages = [];
         uiMediator.profileNameInput.value = '';
         uiMediator.stageDurationInput.value = 2;
