@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "app": "breathe",
+  "kind": "selected-version-restore",
+  "value": {
+    "sessions": [],
+    "profiles": [],
+    "settings": {
+      "regimentId": "coherence",
+      "soundEnabled": "false"
+    }
+  }
+}
