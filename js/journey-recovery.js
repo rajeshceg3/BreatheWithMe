@@ -2,7 +2,11 @@ import{BREATHE_KEYS,parseBreatheRaw,validateBreathe,breatheRaw}from'./breathe-sc
 export function captureRaw(storage){return{format:'breathe-raw-v1',raw:Object.fromEntries(BREATHE_KEYS.map(k=>[k,storage.getItem(k)]))}};
 export function prepareRestore(text,storage){
  const d=JSON.parse(text);if(!d||d.schema!==1||d.app!=='breathe'||d.kind!=='selected-version-restore'||Object.keys(d).some(k=>!['schema','app','kind','value'].includes(k)))throw Error('Choose a Breathe selected-version restore file');
- validateBreathe(d.value);const before=captureRaw(storage);parseBreatheRaw(JSON.stringify(before));
+ validateBreathe(d.value);const before=captureRaw(storage);const current=parseBreatheRaw(JSON.stringify(before));
+ // Omitted preferences stay unchanged, but cannot leave a selected custom
+ // profile dangling after this version deliberately removes that profile.
+ try{validateBreathe({...d.value,settings:{...current.settings,...d.value.settings}})}catch{throw Error('This version would leave the selected rhythm without a profile. Choose a built-in rhythm in Preferences, then preview again.')}
+
  return{value:structuredClone(d.value),before,fingerprint:JSON.stringify(before)};
 }
 export function commitRestore(prepared,storage){

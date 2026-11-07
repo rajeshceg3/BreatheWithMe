@@ -137,6 +137,11 @@ export default class UIMediator {
     toggleSettingsPanel(visible) {
         if (this.settingsPanel) {
             this.settingsPanel.classList.toggle('visible', visible);
+            document.body.classList.toggle('settings-reading', visible);
+            for (const element of document.querySelectorAll('.app-container,#particle-canvas')) {
+                element.inert = visible;
+                element.setAttribute('aria-hidden', String(visible));
+            }
             this.settingsToggleButton.setAttribute('aria-expanded', visible.toString());
         }
     }

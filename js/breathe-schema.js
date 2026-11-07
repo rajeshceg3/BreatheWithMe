@@ -25,7 +25,7 @@ export function validateBreathe(v){
   if(k==='regimentId'&&![...base,'custom','mission-reset',...v.profiles.map(p=>p.id)].includes(x))fail('Selected profile missing');
   if(k.startsWith('custom')&&(!/^\d+$/.test(x)||Number(x)<(k==='customHold'?0:1)||Number(x)>60))fail('Invalid custom pace');
  }
- if(JSON.stringify(v).length>180000)fail('Journey too large');return v;
+ if(new TextEncoder().encode(JSON.stringify(v)).byteLength>180000)fail('Journey too large');return v;
 }
 export function parseBreatheRaw(raw){
  const d=JSON.parse(raw);if(!keys(d,['format','raw'])||d.format!=='breathe-raw-v1'||!object(d.raw)||Object.keys(d.raw).some(k=>!BREATHE_KEYS.includes(k))||Object.values(d.raw).some(x=>x!==null&&typeof x!=='string'))fail('Unknown Breathe snapshot');
