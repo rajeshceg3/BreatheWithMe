@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "app": "breathe",
+  "kind": "selected-version-restore",
+  "value": {
+    "sessions": [
+      {
+        "date": "2026-11-07T11:16:40.013Z",
+        "duration": 65174,
+        "regimentId": "profile-1794050128964",
+        "preStress": null,
+        "postStress": null
+      }
+    ],
+    "profiles": [
+      {
+        "id": "profile-1794050128964",
+        "name": "Verification தமிழ் <literal> protocol",
+        "description": "Custom Operational Protocol",
+        "isSequence": true,
+        "sequence": [
+          {
+            "id": "box-breathing",
+            "durationMinutes": 1,
+            "name": "Tactical Calm (Box Breathing)"
+          }
+        ],
+        "benefits": [
+          "Custom Protocol",
+          "Operational Specific"
+        ],
+        "audio": {
+          "baseFreq": 200,
+          "binauralBeat": 8
+        },
+        "isCustom": true
+      }
+    ],
+    "settings": {
+      "regimentId": "profile-1794050128964",
+      "lastUsed": "2026-11-07T11:15:34.839Z"
+    }
+  }
+}
