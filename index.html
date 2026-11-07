@@ -190,6 +190,13 @@
                 <label for="session-duration">Time</label>
             </div>
         </fieldset>
+        <details id="journey-recovery"><summary>Keep or restore your journey</summary>
+            <p>Completed sessions, custom profiles and preferences are saved in this browser only. Live breath timers are not included. Transfer a file manually to your private saved-app home for cloud storage. No automatic sync.</p>
+            <button id="journey-export" class="secondary-button">Download browser recovery file</button>
+            <label for="journey-file">Choose private selected-version restore file</label><input id="journey-file" type="file" accept="application/json,.json">
+            <button id="journey-preview" class="secondary-button">Preview restore</button><button id="journey-confirm" class="primary-button" disabled>Confirm replacement and reload</button>
+            <p id="journey-message" role="status">Preview first. Nothing is replaced until you confirm.</p><div id="journey-downloads"></div>
+        </details>
     </div>
 
     <!-- Main JS (Vite Module) -->
