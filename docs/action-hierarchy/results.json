@@ -1,0 +1,50 @@
+[
+  {
+    "width": 320,
+    "theme": "light",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 844,
+    "theme": "light",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 844,
+    "theme": "dark",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 1320,
+    "theme": "light",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  },
+  {
+    "width": 1320,
+    "theme": "dark",
+    "passed": true,
+    "checks": "home hit-test/44px;one recovery primary;phase transitions;preview no writes;malformed refusal;file-clear reset;confirm backup/download/reload/duplicate null-stress sessions/false;overflow/no errors"
+  }
+]

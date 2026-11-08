@@ -20,3 +20,13 @@ body.settings-reading{background:var(--bg-gradient-1);animation:none}body.settin
 
 #settings-panel .settings-closebar{position:sticky;top:0;z-index:10;background:var(--bg-gradient-3);flex-shrink:0;display:flex;justify-content:flex-end;width:calc(100% + 24px);margin-left:-12px;padding:4px 0}#settings-panel .settings-closebar #close-settings-button{position:static;margin:0;transform:none!important}#settings-panel{scroll-padding-top:64px}
 #settings-panel{overflow-x:hidden}#settings-panel fieldset,#settings-panel .modern-input-group{min-width:0}#settings-panel .regiment-select-container select{min-width:0;flex:1}#journey-recovery input[type=file]{overflow:hidden;min-width:0}
+
+/* The current action contrasts with the quiet breathing surface, in both themes. */
+:root{--action-bg:#a53f26;--action-fg:#fff9f2;--action-hover:#85311c}
+:root[data-theme=dark]{--action-bg:#ffc49c;--action-fg:#382317;--action-hover:#ffd8ba}
+#session-button,.primary-button{background:var(--action-bg);color:var(--action-fg);border:1px solid transparent;min-height:44px}
+#session-button:hover,.primary-button:hover{background:var(--action-hover);color:var(--action-fg)}
+.secondary-button{min-height:44px}
+#journey-recovery button:disabled{background:transparent;color:var(--text-primary);border:1px solid var(--text-primary)}
+#session-button:focus-visible,.primary-button:focus-visible{outline:3px solid var(--text-primary);outline-offset:4px}
+@media(prefers-reduced-motion:reduce){#session-button,.primary-button,.secondary-button{transition:none;transform:none!important}}
